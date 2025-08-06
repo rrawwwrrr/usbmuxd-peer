@@ -2,6 +2,7 @@ package main
 
 import (
 	"goios-peer/goios"
+	"goios-peer/rest"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -15,4 +16,6 @@ func main() {
 	log.Info("Hello Walrus after FullTimestamp=true")
 	//log.SetLevel(log.TraceLevel)
 	goios.Start()
+	rest.StartRestAPI()
+
 }
