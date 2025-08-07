@@ -1,13 +1,14 @@
 package rest
 
 import (
+	"io"
+	"os"
+
 	"github.com/danielpaulus/go-ios/restapi/api"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"io"
-	"os"
 )
 
 func StartRestAPI() {
@@ -22,7 +23,7 @@ func StartRestAPI() {
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	err := router.Run(":8080")
+	err := router.Run(":8082")
 	if err != nil {
 		log.Error(err)
 	}
