@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"os"
+	"strconv"
 	"sync"
 
 	"github.com/danielpaulus/go-ios/ios"
@@ -88,10 +89,42 @@ func CreateWdaSession(c *gin.Context) {
 		stopWda:   stopWda,
 	}
 	go func() {
-		fwd, err := forward.Forward(device, 8001, 8001)
+		/* прокидываем порт для mjpeg трафика*/
+		mjpegPortStr, ok := config.Env["MJPEG_SERVER_PORT"].(string)
+		if !ok {
+			log.Error("MJPEG_SERVER_PORT is not a string")
+			return
+		}
+
+		mjpegPort, err := strconv.ParseUint(mjpegPortStr, 10, 16)
+		if err != nil {
+			log.Errorf("Invalid MJPEG_SERVER_PORT: %v", err)
+			return
+		}
+
+		fwdMjpeg, err := forward.Forward(device, uint16(mjpegPort), uint16(mjpegPort))
 		if err != nil {
 			log.Info(err)
 		}
+
+		/* прокидываем порт для wda трафика */
+		usePortStr, ok := config.Env["USE_PORT"].(string)
+		if !ok {
+			log.Error("USE_PORT is not a string")
+			return
+		}
+
+		usePort, err := strconv.ParseUint(usePortStr, 10, 16)
+		if err != nil {
+			log.Errorf("Invalid USE_PORT: %v", err)
+			return
+		}
+
+		fwdWda, err := forward.Forward(device, uint16(usePort), uint16(usePort))
+		if err != nil {
+			log.Info(err)
+		}
+		/* запускаем wda */
 		_, err = testmanagerd.RunTestWithConfig(wdaCtx, testmanagerd.TestConfig{
 			BundleId:           config.BundleID,
 			TestRunnerBundleId: config.TestbundleID,
@@ -110,7 +143,8 @@ func CreateWdaSession(c *gin.Context) {
 		}
 
 		stopWda()
-		fwd.Close()
+		fwdMjpeg.Close()
+		fwdWda.Close()
 		globalSessions.Delete(sessionKey)
 
 		log.
