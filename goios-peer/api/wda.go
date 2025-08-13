@@ -95,17 +95,19 @@ func CreateWdaSession(c *gin.Context) {
 			log.Error("MJPEG_SERVER_PORT is not a string")
 			return
 		}
-
 		mjpegPort, err := strconv.ParseUint(mjpegPortStr, 10, 16)
 		if err != nil {
 			log.Errorf("Invalid MJPEG_SERVER_PORT: %v", err)
 			return
 		}
-
 		fwdMjpeg, err := forward.Forward(device, uint16(mjpegPort), uint16(mjpegPort))
 		if err != nil {
 			log.Info(err)
 		}
+		log.
+			WithField("udid", device.Properties.SerialNumber).
+			WithField("port", mjpegPort).
+			Debugf("PortForward mjpeg server")
 
 		/* прокидываем порт для wda трафика */
 		usePortStr, ok := config.Env["USE_PORT"].(string)
@@ -113,17 +115,20 @@ func CreateWdaSession(c *gin.Context) {
 			log.Error("USE_PORT is not a string")
 			return
 		}
-
 		usePort, err := strconv.ParseUint(usePortStr, 10, 16)
 		if err != nil {
 			log.Errorf("Invalid USE_PORT: %v", err)
 			return
 		}
-
 		fwdWda, err := forward.Forward(device, uint16(usePort), uint16(usePort))
 		if err != nil {
 			log.Info(err)
 		}
+		log.
+			WithField("udid", device.Properties.SerialNumber).
+			WithField("port", mjpegPort).
+			Debugf("PortForward wda server")
+
 		/* запускаем wda */
 		_, err = testmanagerd.RunTestWithConfig(wdaCtx, testmanagerd.TestConfig{
 			BundleId:           config.BundleID,
