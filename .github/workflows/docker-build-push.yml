@@ -26,3 +26,6 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/usbmuxd-peer:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/usbmuxd-peer:${{ github.run_id }}
+
+      
