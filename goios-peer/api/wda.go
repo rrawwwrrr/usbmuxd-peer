@@ -57,6 +57,13 @@ var globalSessions = sync.Map{}
 // @Router /wda/session [post]
 func CreateWdaSession(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
+
+	_, existingSession, found := FindSessionByUdid(device.Properties.SerialNumber)
+	if found {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Session already exists for this device", "session": existingSession})
+		return
+	}
+
 	log.
 		WithField("udid", device.Properties.SerialNumber).
 		Debugf("Creating WDA session")
@@ -240,4 +247,27 @@ func DeleteWdaSession(c *gin.Context) {
 		Debug("Requested to stop WDA")
 
 	c.JSON(http.StatusOK, session)
+}
+
+func FindSessionByUdid(udid string) (WdaSessionKey, *WdaSession, bool) {
+	var foundKey WdaSessionKey
+	var foundSession *WdaSession
+	found := false
+	globalSessions.Range(func(key, value any) bool {
+		sk, ok := key.(WdaSessionKey)
+		if !ok {
+			return true
+		}
+		if sk.udid == udid {
+			ws, ok := value.(WdaSession)
+			if ok {
+				foundKey = sk
+				foundSession = &ws
+				found = true
+				return false // stop iteration
+			}
+		}
+		return true
+	})
+	return foundKey, foundSession, found
 }
