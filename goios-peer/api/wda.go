@@ -133,7 +133,7 @@ func CreateWdaSession(c *gin.Context) {
 		}
 		log.
 			WithField("udid", device.Properties.SerialNumber).
-			WithField("port", mjpegPort).
+			WithField("port", fwdWda).
 			Debugf("PortForward wda server")
 
 		/* запускаем wda */
