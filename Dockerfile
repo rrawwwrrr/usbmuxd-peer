@@ -4,10 +4,10 @@ WORKDIR /app
 COPY goios-peer goios-peer
 
 WORKDIR /app/goios-peer
-RUN go install github.com/swaggo/swag/cmd/swag@latest
+RUN #go install github.com/swaggo/swag/cmd/swag@latest
 
 RUN go build -o ../peer
-RUN /go/bin/swag init --parseDependency --parseInternal
+RUN #/go/bin/swag init --parseDependency --parseInternal
 RUN chmod +x ../peer
 
 FROM ubuntu:24.04
