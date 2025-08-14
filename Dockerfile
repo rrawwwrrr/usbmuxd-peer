@@ -7,7 +7,7 @@ WORKDIR /app/goios-peer
 RUN go install github.com/swaggo/swag/cmd/swag@latest
 
 RUN go build -o ../peer
-RUN /go/bin/swag init
+RUN /go/bin/swag init --parseDependency --parseInternal
 RUN chmod +x ../peer
 
 FROM ubuntu:24.04
@@ -20,6 +20,7 @@ RUN apt update && apt -y install unzip wget curl libimobiledevice-utils libimobi
 
 WORKDIR /app
 COPY run.sh run.sh
+COPY --from=builder /app/goios-peer/docs /app/
 COPY --from=builder /app/peer /app/peer
 RUN chmod +x run.sh
 
