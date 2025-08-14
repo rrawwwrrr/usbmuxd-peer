@@ -4,6 +4,8 @@ WORKDIR /app
 COPY goios-peer goios-peer
 
 WORKDIR /app/goios-peer
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+RUN /go/bin/swag init
 RUN go build -o ../peer
 RUN chmod +x ../peer
 
