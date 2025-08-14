@@ -20,7 +20,7 @@ RUN apt update && apt -y install unzip wget curl libimobiledevice-utils libimobi
 
 WORKDIR /app
 COPY run.sh run.sh
-COPY --from=builder /app/goios-peer/docs /app/
+COPY --from=builder /app/goios-peer/docs /app/docs
 COPY --from=builder /app/peer /app/peer
 RUN chmod +x run.sh
 
