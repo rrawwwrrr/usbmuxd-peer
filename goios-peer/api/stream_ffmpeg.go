@@ -115,7 +115,7 @@ func StartStream(c *gin.Context) {
 	wda := NewWdaFactory()
 	wdaSession, _ := wda.Create(device, config)
 	wdaSessionKey := WdaSessionKey{wdaSession.Udid, wdaSession.SessionId}
-	if err := waitForMJPEG("127.0.0.1:8001", 10*time.Second); err != nil {
+	if err := waitForMJPEG("http://127.0.0.1:8001", 10*time.Second); err != nil {
 		log.Error(err)
 	}
 	var req StreamRequest
@@ -166,7 +166,7 @@ func StatusStream(c *gin.Context) {
 func waitForMJPEG(address string, timeout time.Duration) error {
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
-		resp, err := http.Get("http://" + address)
+		resp, err := http.Get(address)
 		if err == nil {
 			resp.Body.Close()
 			ct := resp.Header.Get("Content-Type")
