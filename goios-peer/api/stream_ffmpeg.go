@@ -107,15 +107,18 @@ func StartStream(c *gin.Context) {
 	}
 
 	wda := NewWdaFactory()
-	wda.Create(device, config)
+	wdaSession, _ := wda.Create(device, config)
+	wdaSessionKey := WdaSessionKey{wdaSession.Udid, wdaSession.SessionId}
 	var req StreamRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
+		wda.Delete(wdaSessionKey)
 		return
 	}
 
 	if err := startStream(req.URL, req.Port); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
+		wda.Delete(wdaSessionKey)
 		return
 	}
 
