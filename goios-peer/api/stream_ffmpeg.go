@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"sync"
 
+	"github.com/danielpaulus/go-ios/ios"
 	"github.com/gin-gonic/gin"
 )
 
@@ -88,6 +89,25 @@ func stopStream() {
 // @Failure 500 {string} string "Internal error"
 // @Router /start [post]
 func StartStream(c *gin.Context) {
+	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
+
+	var config WdaConfig
+	if err := c.ShouldBindJSON(&config); err != nil {
+		config = WdaConfig{
+			BundleID:     "com.facebook.WebDriverAgentRunner.xctrunner",
+			TestbundleID: "com.facebook.WebDriverAgentRunner.xctrunner",
+			XCTestConfig: "WebDriverAgentRunner.xctest",
+			Args:         []string{},
+			Env: map[string]interface{}{
+				"MJPEG_SERVER_PORT":         "8001",
+				"USE_PORT":                  "8100",
+				"UITEST_DISABLE_ANIMATIONS": "YES",
+			},
+		}
+	}
+
+	wda := NewWdaFactory()
+	wda.Create(device, config)
 	var req StreamRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
