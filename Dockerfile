@@ -10,12 +10,12 @@ RUN go build -o peer
 
 FROM ubuntu:24.04
 
-RUN apt update && apt -y install libimobiledevice-utils libimobiledevice6 usbmuxd  \
-       ffmpeg && rm -rf /var/lib/apt/lists/*
+RUN apt update && apt -y install libimobiledevice-utils libimobiledevice6 usbmuxd  ffmpeg \
+        && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY run.sh run.sh
-COPY --from=builder /app/docs /app/docs
+#COPY --from=builder /app/docs /app/docs
 COPY --from=builder /app/peer /app/peer
 
 RUN chmod +x /app/peer run.sh
