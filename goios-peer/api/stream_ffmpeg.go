@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -116,7 +115,7 @@ func StartStream(c *gin.Context) {
 	wda := NewWdaFactory()
 	wdaSession, _ := wda.Create(device, config)
 	wdaSessionKey := WdaSessionKey{wdaSession.Udid, wdaSession.SessionId}
-	if err := waitForPort("127.0.0.1:8001", 10*time.Second); err != nil {
+	if err := waitForMJPEG("127.0.0.1:8001", 10*time.Second); err != nil {
 		log.Error(err)
 	}
 	var req StreamRequest
