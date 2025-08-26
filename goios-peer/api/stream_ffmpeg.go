@@ -92,18 +92,17 @@ func StartStream(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
 
 	var config WdaConfig
-	if err := c.ShouldBindJSON(&config); err != nil {
-		config = WdaConfig{
-			BundleID:     "com.facebook.WebDriverAgentRunner.xctrunner",
-			TestbundleID: "com.facebook.WebDriverAgentRunner.xctrunner",
-			XCTestConfig: "WebDriverAgentRunner.xctest",
-			Args:         []string{},
-			Env: map[string]interface{}{
-				"MJPEG_SERVER_PORT":         "8001",
-				"USE_PORT":                  "8100",
-				"UITEST_DISABLE_ANIMATIONS": "YES",
-			},
-		}
+
+	config = WdaConfig{
+		BundleID:     "com.facebook.WebDriverAgentRunner.xctrunner",
+		TestbundleID: "com.facebook.WebDriverAgentRunner.xctrunner",
+		XCTestConfig: "WebDriverAgentRunner.xctest",
+		Args:         []string{},
+		Env: map[string]interface{}{
+			"MJPEG_SERVER_PORT":         "8001",
+			"USE_PORT":                  "8100",
+			"UITEST_DISABLE_ANIMATIONS": "YES",
+		},
 	}
 
 	wda := NewWdaFactory()
