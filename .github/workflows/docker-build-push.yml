@@ -2,9 +2,9 @@ name: Docker Build and Push
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" , "ffmpeg" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main" , "ffmpeg"]
 
 jobs:
   build-and-push:
