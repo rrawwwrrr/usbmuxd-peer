@@ -15,6 +15,7 @@ func registerRoutes(router *gin.RouterGroup) {
 	simpleDeviceRoutes(device)
 	appRoutes(device)
 	wdaRoutes(device)
+	streamRoutes(device)
 }
 
 func simpleDeviceRoutes(device *gin.RouterGroup) {
