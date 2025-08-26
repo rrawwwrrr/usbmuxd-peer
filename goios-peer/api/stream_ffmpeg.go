@@ -52,6 +52,7 @@ func startStream(host string, port int) error {
 		"-reconnect", "1",
 		"-reconnect_streamed", "1",
 		"-reconnect_delay_max", "5",
+		"-reconnect_at_eof", "1",
 	}
 
 	c := exec.Command("ffmpeg", args...)
