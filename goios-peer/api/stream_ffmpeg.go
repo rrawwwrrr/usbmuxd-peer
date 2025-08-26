@@ -2,13 +2,16 @@ package api
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
 	"sync"
+	"time"
 
 	"github.com/danielpaulus/go-ios/ios"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 // StreamRequest структура запроса для старта стрима
@@ -111,6 +114,9 @@ func StartStream(c *gin.Context) {
 	wda := NewWdaFactory()
 	wdaSession, _ := wda.Create(device, config)
 	wdaSessionKey := WdaSessionKey{wdaSession.Udid, wdaSession.SessionId}
+	if err := waitForPort("127.0.0.1:8001", 10*time.Second); err != nil {
+		log.Error(err)
+	}
 	var req StreamRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
@@ -155,4 +161,16 @@ func StatusStream(c *gin.Context) {
 	} else {
 		c.String(http.StatusOK, "stopped")
 	}
+}
+func waitForPort(address string, timeout time.Duration) error {
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		conn, err := net.DialTimeout("tcp", address, 500*time.Millisecond)
+		if err == nil {
+			conn.Close()
+			return nil
+		}
+		time.Sleep(200 * time.Millisecond)
+	}
+	return fmt.Errorf("timeout waiting for %s", address)
 }
