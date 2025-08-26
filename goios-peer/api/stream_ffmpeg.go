@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 	"time"
 
@@ -163,15 +164,18 @@ func StatusStream(c *gin.Context) {
 		c.String(http.StatusOK, "stopped")
 	}
 }
-func waitForPort(address string, timeout time.Duration) error {
+func waitForMJPEG(address string, timeout time.Duration) error {
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
-		conn, err := net.DialTimeout("tcp", address, 500*time.Millisecond)
+		resp, err := http.Get("http://" + address)
 		if err == nil {
-			conn.Close()
-			return nil
+			resp.Body.Close()
+			ct := resp.Header.Get("Content-Type")
+			if strings.HasPrefix(ct, "multipart/x-mixed-replace") {
+				return nil // MJPEG сервер готов
+			}
 		}
 		time.Sleep(200 * time.Millisecond)
 	}
-	return fmt.Errorf("timeout waiting for %s", address)
+	return fmt.Errorf("timeout waiting for MJPEG at %s", address)
 }
