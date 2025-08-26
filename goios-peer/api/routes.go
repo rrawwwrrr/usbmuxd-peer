@@ -14,6 +14,7 @@ func registerRoutes(router *gin.RouterGroup) {
 	device.Use(DeviceMiddleware())
 	simpleDeviceRoutes(device)
 	appRoutes(device)
+	wdaRoutes(device)
 }
 
 func simpleDeviceRoutes(device *gin.RouterGroup) {
@@ -36,14 +37,10 @@ func simpleDeviceRoutes(device *gin.RouterGroup) {
 
 	device.POST("/resetlocation", ResetLocation)
 	device.GET("/screenshot", Screenshot)
-	device.GET("/screenstream", mjpegMiddleWare, MJPEGStreamHandler)
+	//device.GET("/stream", mjpegMiddleWare, MJPEGStreamHandler)
 	device.PUT("/setlocation", SetLocation)
 	device.GET("/syslog", streamingMiddleWare, Syslog)
 
-	device.POST("/wda/session", CreateWdaSession)
-	device.GET("/wda/screenstream/", mjpegMiddleWare, MJPEGProxyHandler)
-	device.GET("/wda/session/:sessionId", ReadWdaSession)
-	device.DELETE("/wda/session/:sessionId", DeleteWdaSession)
 }
 
 func appRoutes(group *gin.RouterGroup) {
@@ -54,4 +51,21 @@ func appRoutes(group *gin.RouterGroup) {
 	router.POST("/kill", KillApp)
 	router.POST("/install", InstallApp)
 	router.POST("/uninstall", UninstallApp)
+}
+
+func wdaRoutes(group *gin.RouterGroup) {
+	router := group.Group("/wda")
+	router.Use(LimitNumClientsUDID())
+	router.POST("/session", CreateWdaSession)
+	router.GET("/stream/", mjpegMiddleWare, MJPEGProxyHandler)
+	router.GET("/session/:sessionId", ReadWdaSession)
+	router.DELETE("/session/:sessionId", DeleteWdaSession)
+}
+
+func streamRoutes(group *gin.RouterGroup) {
+	router := group.Group("/stream")
+	router.Use(LimitNumClientsUDID())
+	router.POST("/start", StartStream)
+	router.DELETE("/stop", StopStream)
+	router.GET("/status", StatusStream)
 }
