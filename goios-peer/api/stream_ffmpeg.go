@@ -46,6 +46,9 @@ func startStream(host string, port int) error {
 		"-x264-params", "nal-hrd=cbr:repeat-headers=1",
 		"-f", "rtp", "-payload_type", "96",
 		fmt.Sprintf("rtp://%s:%d?pkt_size=1200", host, port),
+		"-reconnect", "1",
+		"-reconnect_streamed", "1",
+		"-reconnect_delay_max", "5",
 	}
 
 	c := exec.Command("ffmpeg", args...)
