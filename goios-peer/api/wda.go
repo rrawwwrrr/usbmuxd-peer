@@ -12,7 +12,6 @@ import (
 	"github.com/danielpaulus/go-ios/ios/forward"
 	"github.com/danielpaulus/go-ios/ios/testmanagerd"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -58,32 +57,28 @@ func NewWdaFactory() *WdaFactory {
 }
 
 func (f *WdaFactory) Create(device ios.DeviceEntry, config WdaConfig) (*WdaSession, error) {
-	if _, existing, found := f.FindByUdid(device.Properties.SerialNumber); found {
-		return existing, ErrSessionAlreadyExists
-	}
+	udid := device.Properties.SerialNumber
 
-	sessionKey := WdaSessionKey{
-		udid:      device.Properties.SerialNumber,
-		sessionID: uuid.New().String(),
+	if _, found := f.Get(udid); found {
+		return nil, ErrSessionAlreadyExists
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	session := WdaSession{
-		Udid:      sessionKey.udid,
-		SessionId: sessionKey.sessionID,
-		Config:    config,
-		stopWda:   cancel,
+		Udid:    udid,
+		Config:  config,
+		stopWda: cancel,
 	}
 
-	go f.runSession(ctx, sessionKey, session, device)
+	go f.runSession(ctx, session, device)
 
-	f.sessions.Store(sessionKey, session)
+	f.sessions.Store(udid, session)
 
 	return &session, nil
 }
 
-func (f *WdaFactory) runSession(ctx context.Context, key WdaSessionKey, session WdaSession, device ios.DeviceEntry) {
+func (f *WdaFactory) runSession(ctx context.Context, session WdaSession, device ios.DeviceEntry) {
 	// MJPEG port forward
 	mjpegPortStr, _ := session.Config.Env["MJPEG_SERVER_PORT"].(string)
 	mjpegPort, _ := strconv.ParseUint(mjpegPortStr, 10, 16)
@@ -106,7 +101,6 @@ func (f *WdaFactory) runSession(ctx context.Context, key WdaSessionKey, session 
 	})
 	if err != nil {
 		log.WithField("udid", session.Udid).
-			WithField("sessionId", session.SessionId).
 			WithError(err).
 			Error("Failed running WDA")
 	}
@@ -114,15 +108,14 @@ func (f *WdaFactory) runSession(ctx context.Context, key WdaSessionKey, session 
 	session.stopWda()
 	fwdMjpeg.Close()
 	fwdWda.Close()
-	f.sessions.Delete(key)
+	f.sessions.Delete(session.Udid)
 
 	log.WithField("udid", session.Udid).
-		WithField("sessionId", session.SessionId).
 		Debug("Deleted WDA session")
 }
 
-func (f *WdaFactory) Get(key WdaSessionKey) (*WdaSession, bool) {
-	val, ok := f.sessions.Load(key)
+func (f *WdaFactory) Get(udid string) (*WdaSession, bool) {
+	val, ok := f.sessions.Load(udid)
 	if !ok {
 		return nil, false
 	}
@@ -133,14 +126,14 @@ func (f *WdaFactory) Get(key WdaSessionKey) (*WdaSession, bool) {
 	return &session, true
 }
 
-func (f *WdaFactory) Delete(key WdaSessionKey) (*WdaSession, bool) {
-	val, ok := f.sessions.Load(key)
+func (f *WdaFactory) Delete(udid string) (*WdaSession, bool) {
+	val, ok := f.sessions.Load(udid)
 	if !ok {
 		return nil, false
 	}
 	session := val.(WdaSession)
 	session.stopWda()
-	f.sessions.Delete(key)
+	f.sessions.Delete(udid)
 	return &session, true
 }
 
@@ -171,7 +164,7 @@ func (f *WdaFactory) FindByUdid(udid string) (WdaSessionKey, *WdaSession, bool) 
 var wdaFactory = NewWdaFactory()
 
 // @Summary Создать новую сессию WDA
-// @Description Создать новую сессию WebDriverAgent для указанного устройства
+// @Description Создать новую сессию WebDriverAgent для указанного устройства (одна сессия на UDID)
 // @Tags WebDriverAgent
 // @Accept json
 // @Produce json
@@ -207,26 +200,17 @@ func CreateWdaSession(c *gin.Context) {
 	c.JSON(http.StatusOK, session)
 }
 
-// @Summary Получить сессию WebDriverAgent
-// @Description Получить сессию WebDriverAgent по sessionId
+// @Summary Получить активную сессию WebDriverAgent
+// @Description Получить активную сессию WebDriverAgent для указанного устройства (по UDID)
 // @Tags WebDriverAgent
 // @Produce json
-// @Param sessionId path string true "ID сессии"
 // @Success 200 {object} WdaSession
-// @Failure 400 {object} GenericResponse
-// @Router /wda/session/{sessionId} [get]
-// @Example request {"config":{"bundleId":"com.facebook.WebDriverAgentRunner.xctrunner","testbundleId":"com.facebook.WebDriverAgentRunner.xctrunner","xctestConfig":"WebDriverAgentRunner.xctest","args":[],"env":{"MJPEG_SERVER_PORT":"8001","USE_PORT":"8100","UITEST_DISABLE_ANIMATIONS":"YES"}}}
-// @Example response {"config":{"bundleId":"com.facebook.WebDriverAgentRunner.xctrunner","testbundleId":"com.facebook.WebDriverAgentRunner.xctrunner","xctestConfig":"WebDriverAgentRunner.xctest","args":[],"env":{"MJPEG_SERVER_PORT":"8001","USE_PORT":"8100","UITEST_DISABLE_ANIMATIONS":"YES"}},"sessionId":"12345678-90ab-cdef-1234-567890abcdef","udid":"00008020-001C195E0A88002E"}
+// @Failure 404 {object} GenericResponse
+// @Router /wda/session [get]
 func ReadWdaSession(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
-	sessionID := c.Param("sessionId")
 
-	key := WdaSessionKey{
-		udid:      device.Properties.SerialNumber,
-		sessionID: sessionID,
-	}
-
-	session, ok := wdaFactory.Get(key)
+	session, ok := wdaFactory.Get(device.Properties.SerialNumber)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "session not found"})
 		return
@@ -236,23 +220,16 @@ func ReadWdaSession(c *gin.Context) {
 }
 
 // @Summary Удалить сессию WebDriverAgent
-// @Description Удалить сессию WebDriverAgent по sessionId
+// @Description Удалить активную сессию WebDriverAgent для указанного устройства (по UDID)
 // @Tags WebDriverAgent
 // @Produce json
-// @Param sessionId path string true "ID сессии"
 // @Success 200 {object} WdaSession
-// @Failure 400 {object} GenericResponse
-// @Router /wda/session/{sessionId} [delete]
+// @Failure 404 {object} GenericResponse
+// @Router /wda/session [delete]
 func DeleteWdaSession(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
-	sessionID := c.Param("sessionId")
 
-	key := WdaSessionKey{
-		udid:      device.Properties.SerialNumber,
-		sessionID: sessionID,
-	}
-
-	session, ok := wdaFactory.Delete(key)
+	session, ok := wdaFactory.Delete(device.Properties.SerialNumber)
 	if !ok {
 		c.JSON(http.StatusNotFound, gin.H{"error": "session not found"})
 		return

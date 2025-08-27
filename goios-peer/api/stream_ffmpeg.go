@@ -27,7 +27,7 @@ var (
 
 // startStream запускает ffmpeg для ретрансляции MJPEG -> H264 -> RTP
 func startStream(host string, port int) error {
-	stopStream()
+	stopStream("")
 
 	mjpegURL := "http://127.0.0.1:8001"
 
@@ -70,13 +70,14 @@ func startStream(host string, port int) error {
 
 	go func() {
 		_ = c.Wait()
-		stopStream()
+		stopStream("")
 	}()
 
 	return nil
 }
 
-func stopStream() {
+func stopStream(udid string) {
+
 	mu.Lock()
 	defer mu.Unlock()
 	if cmd != nil && cmd.Process != nil {
@@ -113,22 +114,20 @@ func StartStream(c *gin.Context) {
 		},
 	}
 
-	wda := NewWdaFactory()
-	wdaSession, _ := wda.Create(device, config)
-	wdaSessionKey := WdaSessionKey{wdaSession.Udid, wdaSession.SessionId}
+	wdaFactory.Create(device, config)
 	if err := waitForMJPEG("http://127.0.0.1:8001", 10*time.Second); err != nil {
 		log.Error(err)
 	}
 	var req StreamRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
-		wda.Delete(wdaSessionKey)
+		wdaFactory.Delete(device.Properties.SerialNumber)
 		return
 	}
 
 	if err := startStream(req.URL, req.Port); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
-		wda.Delete(wdaSessionKey)
+		wdaFactory.Delete(device.Properties.SerialNumber)
 		return
 	}
 
@@ -143,7 +142,16 @@ func StartStream(c *gin.Context) {
 // @Success 200 {string} string "Stream stopped"
 // @Router /stop [post]
 func StopStream(c *gin.Context) {
-	stopStream()
+	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
+
+	// Останавливаем ffmpeg процесс (твоя логика)
+	stopStream(device.Properties.SerialNumber)
+
+	// Пытаемся завершить WDA-сессию
+	if session, ok := wdaFactory.Delete(device.Properties.SerialNumber); ok {
+		log.WithField("udid", session.Udid).Info("WDA session stopped with stream stop")
+	}
+
 	c.String(http.StatusOK, "Stream stopped")
 }
 
