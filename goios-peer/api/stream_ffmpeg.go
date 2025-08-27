@@ -32,9 +32,9 @@ func startStream(host string, port int) error {
 	mjpegURL := "http://127.0.0.1:8001"
 
 	args := []string{
-		"-v", "verbose",
-		"-re",
-		"-fflags", "+genpts",
+		"-fflags", "nobuffer",
+		"-flags", "low_delay",
+		"-rtbufsize", "0",
 		"-r", "25",
 		"-i", mjpegURL,
 		"-an",
