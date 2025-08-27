@@ -32,6 +32,10 @@ func startStream(host string, port int) error {
 	mjpegURL := "http://127.0.0.1:8001"
 
 	args := []string{
+		"-reconnect", "1",
+		"-reconnect_streamed", "1",
+		"-reconnect_delay_max", "5",
+		"-reconnect_at_eof", "1",
 		"-fflags", "nobuffer",
 		"-flags", "low_delay",
 		"-rtbufsize", "0",
@@ -39,20 +43,17 @@ func startStream(host string, port int) error {
 		"-i", mjpegURL,
 		"-an",
 		"-c:v", "libx264",
-		"-preset", "veryfast",
+		"-preset", "ultrafast",
 		"-tune", "zerolatency",
 		"-pix_fmt", "yuv420p",
 		"-profile:v", "baseline",
 		"-level", "3.1",
-		"-g", "25", "-keyint_min", "25", "-sc_threshold", "0",
+		"-g", "15", "-keyint_min", "15", "-sc_threshold", "0",
 		"-b:v", "1500k", "-maxrate", "1500k", "-bufsize", "1500k",
 		"-x264-params", "nal-hrd=cbr:repeat-headers=1",
+		"-flush_packets", "1",
 		"-f", "rtp", "-payload_type", "96",
 		fmt.Sprintf("rtp://%s:%d?pkt_size=1200", host, port),
-		"-reconnect", "1",
-		"-reconnect_streamed", "1",
-		"-reconnect_delay_max", "5",
-		"-reconnect_at_eof", "1",
 	}
 
 	c := exec.Command("ffmpeg", args...)
