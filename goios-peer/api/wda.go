@@ -178,17 +178,7 @@ func CreateWdaSession(c *gin.Context) {
 	var config WdaConfig
 	if err := c.ShouldBindJSON(&config); err != nil {
 		// fallback на дефолтный конфиг
-		config = WdaConfig{
-			BundleID:     "com.facebook.WebDriverAgentRunner.xctrunner",
-			TestbundleID: "com.facebook.WebDriverAgentRunner.xctrunner",
-			XCTestConfig: "WebDriverAgentRunner.xctest",
-			Args:         []string{},
-			Env: map[string]interface{}{
-				"MJPEG_SERVER_PORT":         "8001",
-				"USE_PORT":                  "8100",
-				"UITEST_DISABLE_ANIMATIONS": "YES",
-			},
-		}
+		config = defaultWdaConfig()
 	}
 
 	session, err := wdaFactory.Create(device, config)
@@ -236,4 +226,18 @@ func DeleteWdaSession(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, session)
+}
+
+func defaultWdaConfig() WdaConfig {
+	return WdaConfig{
+		BundleID:     "com.facebook.WebDriverAgentRunner.xctrunner",
+		TestbundleID: "com.facebook.WebDriverAgentRunner.xctrunner",
+		XCTestConfig: "WebDriverAgentRunner.xctest",
+		Args:         []string{},
+		Env: map[string]interface{}{
+			"MJPEG_SERVER_PORT":         "8001",
+			"USE_PORT":                  "8100",
+			"UITEST_DISABLE_ANIMATIONS": "YES",
+		},
+	}
 }

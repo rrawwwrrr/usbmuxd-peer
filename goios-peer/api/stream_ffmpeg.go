@@ -99,24 +99,14 @@ func stopStream(udid string) {
 func StartStream(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
 
-	config := WdaConfig{
-		BundleID:     "com.facebook.WebDriverAgentRunner.xctrunner",
-		TestbundleID: "com.facebook.WebDriverAgentRunner.xctrunner",
-		XCTestConfig: "WebDriverAgentRunner.xctest",
-		Args:         []string{},
-		Env: map[string]interface{}{
-			"MJPEG_SERVER_PORT":         "8001",
-			"USE_PORT":                  "8100",
-			"UITEST_DISABLE_ANIMATIONS": "YES",
-		},
-	}
-
 	var req StreamRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
-	wdaFactory.Create(device, config)
+	wdaConfig := defaultWdaConfig()
+	wdaFactory.Create(device, wdaConfig)
+
 	if err := waitForMJPEG("http://127.0.0.1:8001", 10*time.Second); err != nil {
 		log.Error(err)
 	}
