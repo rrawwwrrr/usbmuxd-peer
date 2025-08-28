@@ -26,10 +26,9 @@ var (
 )
 
 // startStream запускает ffmpeg для ретрансляции MJPEG -> H264 -> RTP
-func startStream(host string, port int) error {
-	stopStream("")
+func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 
-	mjpegURL := "http://127.0.0.1:8001"
+	mjpegURL := fmt.Sprintf("http://%s:%d", mjpegHost, mjpegPort)
 
 	args := []string{
 		"-reconnect", "1",
@@ -100,9 +99,7 @@ func stopStream(udid string) {
 func StartStream(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
 
-	var config WdaConfig
-
-	config = WdaConfig{
+	config := WdaConfig{
 		BundleID:     "com.facebook.WebDriverAgentRunner.xctrunner",
 		TestbundleID: "com.facebook.WebDriverAgentRunner.xctrunner",
 		XCTestConfig: "WebDriverAgentRunner.xctest",
@@ -114,18 +111,16 @@ func StartStream(c *gin.Context) {
 		},
 	}
 
+	var req StreamRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
 	wdaFactory.Create(device, config)
 	if err := waitForMJPEG("http://127.0.0.1:8001", 10*time.Second); err != nil {
 		log.Error(err)
 	}
-	var req StreamRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.String(http.StatusBadRequest, err.Error())
-		wdaFactory.Delete(device.Properties.SerialNumber)
-		return
-	}
-
-	if err := startStream(req.URL, req.Port); err != nil {
+	if err := startStream(req.URL, req.Port, "127.0.0.1", 8001); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		wdaFactory.Delete(device.Properties.SerialNumber)
 		return
