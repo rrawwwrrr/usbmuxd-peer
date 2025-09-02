@@ -194,6 +194,29 @@ paths:
       summary: Запуск приложения на устройстве
       tags:
       - apps
+  /device/{udid}/apps/uninstall:
+    delete:
+      description: Удалить приложение с устройства по указанному bundleID
+      parameters:
+      - description: bundleID приложения
+        in: query
+        name: bundleID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Удаление приложения с устройства
+      tags:
+      - apps
   /device/{udid}/conditions:
     get:
       description: Получить список условий, которые можно применить к устройству

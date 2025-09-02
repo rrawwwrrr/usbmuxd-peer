@@ -180,6 +180,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/device/{udid}/apps/uninstall": {
+            "delete": {
+                "description": "Удалить приложение с устройства по указанному bundleID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "apps"
+                ],
+                "summary": "Удаление приложения с устройства",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bundleID приложения",
+                        "name": "bundleID",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/device/{udid}/conditions": {
             "get": {
                 "description": "Получить список условий, которые можно применить к устройству",
