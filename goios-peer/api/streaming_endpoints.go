@@ -55,7 +55,7 @@ func Notifications(c *gin.Context) {
 // @Tags         general
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}
-// @Router       /listen [get]
+// @Router      /device/{udid}/stream/listen [get]
 func Syslog(c *gin.Context) {
 	// We are streaming current time to clients in the interval 10 seconds
 	log.Info("connect")
@@ -80,7 +80,7 @@ func Syslog(c *gin.Context) {
 // @Tags         general
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}
-// @Router       /listen [get]
+// @Router       /device/{udid}/stream/listen [get]
 func Listen(c *gin.Context) {
 	// We are streaming current time to clients in the interval 10 seconds
 	log.Info("connect")

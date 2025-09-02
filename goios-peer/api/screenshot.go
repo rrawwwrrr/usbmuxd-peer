@@ -162,7 +162,7 @@ func getStreamManager(path string, device ios.DeviceEntry) *StreamManager {
 // @Header       200  {string}  Cache-Control "no-cache, private"
 // @Header       200  {string}  Pragma "no-cache"
 // @Header       200  {string}  Access-Control-Allow-Origin "*"
-// @Router       /screenstream [get]
+// @Router       /device/{udid}/screenstream [get]
 func MJPEGStreamHandler(c *gin.Context) {
 	path := c.Request.URL.Path
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)

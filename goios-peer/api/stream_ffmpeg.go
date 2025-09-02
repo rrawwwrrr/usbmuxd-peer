@@ -95,7 +95,7 @@ func stopStream(udid string) {
 // @Success 200 {string} string "Stream started"
 // @Failure 400 {string} string "Bad request"
 // @Failure 500 {string} string "Internal error"
-// @Router /start [post]
+// @Router /device/{udid}/stream/start [post]
 func StartStream(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
 
@@ -125,7 +125,7 @@ func StartStream(c *gin.Context) {
 // @Tags stream
 // @Produce plain
 // @Success 200 {string} string "Stream stopped"
-// @Router /stop [post]
+// @Router /device/{udid}/stream/stop [post]
 func StopStream(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
 
@@ -146,7 +146,7 @@ func StopStream(c *gin.Context) {
 // @Tags stream
 // @Produce plain
 // @Success 200 {string} string "running|stopped"
-// @Router /status [get]
+// @Router /device/{udid}/stream/status [get]
 func StatusStream(c *gin.Context) {
 	mu.Lock()
 	defer mu.Unlock()

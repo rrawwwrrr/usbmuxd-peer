@@ -430,6 +430,38 @@ paths:
       summary: Получить скриншот устройства
       tags:
       - general_device_specific
+  /device/{udid}/screenstream:
+    get:
+      description: Возвращает MJPEG-поток скриншотов с iOS-устройства.
+      parameters:
+      - description: ID устройства
+        in: path
+        name: device_id
+        required: true
+        type: string
+      produces:
+      - multipart/x-mixed-replace
+      responses:
+        "200":
+          description: stream
+          headers:
+            Access-Control-Allow-Origin:
+              description: '*'
+              type: string
+            Cache-Control:
+              description: no-cache, private
+              type: string
+            Content-Type:
+              description: multipart/x-mixed-replace; boundary=--BoundaryString
+              type: string
+            Pragma:
+              description: no-cache
+              type: string
+          schema:
+            type: string
+      summary: MJPEG Stream
+      tags:
+      - stream
   /device/{udid}/setlocation:
     post:
       description: Изменяет текущее местоположение устройства на указанные широту
@@ -468,7 +500,7 @@ paths:
       summary: Изменить текущее местоположение устройства
       tags:
       - general_device_specific
-  /listen:
+  /device/{udid}/stream/listen:
     get:
       description: Использует SSE для подключения к команде LISTEN
       produces:
@@ -482,54 +514,7 @@ paths:
       summary: Использует SSE для подключения к команде LISTEN
       tags:
       - general
-  /notifications:
-    get:
-      description: Использует instruments для получения событий изменения состояния
-        приложений
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Использует instruments для получения событий изменения состояния приложений
-      tags:
-      - general
-  /screenstream:
-    get:
-      description: Возвращает MJPEG-поток скриншотов с iOS-устройства.
-      parameters:
-      - description: ID устройства
-        in: path
-        name: device_id
-        required: true
-        type: string
-      produces:
-      - multipart/x-mixed-replace
-      responses:
-        "200":
-          description: stream
-          headers:
-            Access-Control-Allow-Origin:
-              description: '*'
-              type: string
-            Cache-Control:
-              description: no-cache, private
-              type: string
-            Content-Type:
-              description: multipart/x-mixed-replace; boundary=--BoundaryString
-              type: string
-            Pragma:
-              description: no-cache
-              type: string
-          schema:
-            type: string
-      summary: MJPEG Stream
-      tags:
-      - stream
-  /start:
+  /device/{udid}/stream/start:
     post:
       consumes:
       - application/json
@@ -559,7 +544,7 @@ paths:
       summary: Запуск стрима
       tags:
       - stream
-  /status:
+  /device/{udid}/stream/status:
     get:
       description: Возвращает состояние стриминга
       produces:
@@ -572,7 +557,7 @@ paths:
       summary: Статус стрима
       tags:
       - stream
-  /stop:
+  /device/{udid}/stream/stop:
     post:
       description: Останавливает текущий ffmpeg процесс
       produces:
@@ -585,7 +570,7 @@ paths:
       summary: Остановка стрима
       tags:
       - stream
-  /wda/session:
+  /device/{udid}/wda/session:
     delete:
       description: Удалить активную сессию WebDriverAgent для указанного устройства
         (по UDID)
@@ -646,4 +631,19 @@ paths:
       summary: Создать новую сессию WDA
       tags:
       - WebDriverAgent
+  /notifications:
+    get:
+      description: Использует instruments для получения событий изменения состояния
+        приложений
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Использует instruments для получения событий изменения состояния приложений
+      tags:
+      - general
 swagger: "2.0"

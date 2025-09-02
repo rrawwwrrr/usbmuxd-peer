@@ -534,6 +534,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/device/{udid}/screenstream": {
+            "get": {
+                "description": "Возвращает MJPEG-поток скриншотов с iOS-устройства.",
+                "produces": [
+                    "multipart/x-mixed-replace"
+                ],
+                "tags": [
+                    "stream"
+                ],
+                "summary": "MJPEG Stream",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID устройства",
+                        "name": "device_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "stream",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "headers": {
+                            "Access-Control-Allow-Origin": {
+                                "type": "string",
+                                "description": "*"
+                            },
+                            "Cache-Control": {
+                                "type": "string",
+                                "description": "no-cache, private"
+                            },
+                            "Content-Type": {
+                                "type": "string",
+                                "description": "multipart/x-mixed-replace; boundary=--BoundaryString"
+                            },
+                            "Pragma": {
+                                "type": "string",
+                                "description": "no-cache"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/device/{udid}/setlocation": {
             "post": {
                 "description": "Изменяет текущее местоположение устройства на указанные широту и долготу",
@@ -589,7 +636,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/listen": {
+        "/device/{udid}/stream/listen": {
             "get": {
                 "description": "Использует SSE для подключения к команде LISTEN",
                 "produces": [
@@ -610,75 +657,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/notifications": {
-            "get": {
-                "description": "Использует instruments для получения событий изменения состояния приложений",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "general"
-                ],
-                "summary": "Использует instruments для получения событий изменения состояния приложений",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/screenstream": {
-            "get": {
-                "description": "Возвращает MJPEG-поток скриншотов с iOS-устройства.",
-                "produces": [
-                    "multipart/x-mixed-replace"
-                ],
-                "tags": [
-                    "stream"
-                ],
-                "summary": "MJPEG Stream",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID устройства",
-                        "name": "device_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "stream",
-                        "schema": {
-                            "type": "string"
-                        },
-                        "headers": {
-                            "Access-Control-Allow-Origin": {
-                                "type": "string",
-                                "description": "*"
-                            },
-                            "Cache-Control": {
-                                "type": "string",
-                                "description": "no-cache, private"
-                            },
-                            "Content-Type": {
-                                "type": "string",
-                                "description": "multipart/x-mixed-replace; boundary=--BoundaryString"
-                            },
-                            "Pragma": {
-                                "type": "string",
-                                "description": "no-cache"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/start": {
+        "/device/{udid}/stream/start": {
             "post": {
                 "description": "Стартует ретрансляцию MJPEG -\u003e H264 -\u003e RTP",
                 "consumes": [
@@ -724,7 +703,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/status": {
+        "/device/{udid}/stream/status": {
             "get": {
                 "description": "Возвращает состояние стриминга",
                 "produces": [
@@ -744,7 +723,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/stop": {
+        "/device/{udid}/stream/stop": {
             "post": {
                 "description": "Останавливает текущий ffmpeg процесс",
                 "produces": [
@@ -764,7 +743,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/wda/session": {
+        "/device/{udid}/wda/session": {
             "get": {
                 "description": "Получить активную сессию WebDriverAgent для указанного устройства (по UDID)",
                 "produces": [
@@ -847,6 +826,27 @@ const docTemplate = `{
                         "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications": {
+            "get": {
+                "description": "Использует instruments для получения событий изменения состояния приложений",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general"
+                ],
+                "summary": "Использует instruments для получения событий изменения состояния приложений",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }

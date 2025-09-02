@@ -171,7 +171,7 @@ var wdaFactory = NewWdaFactory()
 // @Param config body WdaConfig true "Конфигурация WebDriverAgent"
 // @Success 200 {object} WdaSession
 // @Failure 400 {object} GenericResponse
-// @Router /wda/session [post]
+// @Router /device/{udid}/wda/session [post]
 func CreateWdaSession(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
 
@@ -196,7 +196,7 @@ func CreateWdaSession(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} WdaSession
 // @Failure 404 {object} GenericResponse
-// @Router /wda/session [get]
+// @Router /device/{udid}/wda/session [get]
 func ReadWdaSession(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
 
@@ -215,7 +215,7 @@ func ReadWdaSession(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} WdaSession
 // @Failure 404 {object} GenericResponse
-// @Router /wda/session [delete]
+// @Router /device/{udid}/wda/session [delete]
 func DeleteWdaSession(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
 
