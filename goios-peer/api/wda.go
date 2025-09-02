@@ -169,6 +169,7 @@ var wdaFactory = NewWdaFactory()
 // @Accept json
 // @Produce json
 // @Param config body WdaConfig true "Конфигурация WebDriverAgent"
+// @Param        udid path string true "UDID устройства"
 // @Success 200 {object} WdaSession
 // @Failure 400 {object} GenericResponse
 // @Router /device/{udid}/wda/session [post]
@@ -195,6 +196,7 @@ func CreateWdaSession(c *gin.Context) {
 // @Tags WebDriverAgent
 // @Produce json
 // @Success 200 {object} WdaSession
+// @Param        udid path string true "UDID устройства"
 // @Failure 404 {object} GenericResponse
 // @Router /device/{udid}/wda/session [get]
 func ReadWdaSession(c *gin.Context) {
@@ -214,6 +216,7 @@ func ReadWdaSession(c *gin.Context) {
 // @Tags WebDriverAgent
 // @Produce json
 // @Success 200 {object} WdaSession
+// @Param        udid path string true "UDID устройства"
 // @Failure 404 {object} GenericResponse
 // @Router /device/{udid}/wda/session [delete]
 func DeleteWdaSession(c *gin.Context) {

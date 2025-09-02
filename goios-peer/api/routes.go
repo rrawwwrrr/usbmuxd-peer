@@ -14,14 +14,11 @@ func registerRoutes(router *gin.RouterGroup) {
 	appRoutes(device)
 	wdaRoutes(device)
 	streamRoutes(device)
+	conditionsRoutes(device)
 }
 
 func simpleDeviceRoutes(device *gin.RouterGroup) {
 	device.POST("/activate", Activate)
-
-	device.GET("/conditions", GetSupportedConditions)
-	device.PUT("/enable-condition", EnableDeviceCondition)
-	device.POST("/disable-condition", DisableDeviceCondition)
 
 	device.GET("/image", GetImages)
 	device.PUT("/image", InstallImage)
@@ -40,6 +37,13 @@ func simpleDeviceRoutes(device *gin.RouterGroup) {
 	device.PUT("/setlocation", SetLocation)
 	device.GET("/syslog", streamingMiddleWare, Syslog)
 
+}
+
+func conditionsRoutes(group *gin.RouterGroup) {
+	router := group.Group("/conditions")
+	router.GET("/", GetSupportedConditions)
+	router.PUT("/enable", EnableDeviceCondition)
+	router.POST("/disable", DisableDeviceCondition)
 }
 
 func appRoutes(group *gin.RouterGroup) {

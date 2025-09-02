@@ -77,6 +77,7 @@ func Syslog(c *gin.Context) {
 // Listen                godoc
 // @Summary      Использует SSE для подключения к команде LISTEN
 // @Description Использует SSE для подключения к команде LISTEN
+// @Param        udid path string true "UDID устройства"
 // @Tags         general
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}

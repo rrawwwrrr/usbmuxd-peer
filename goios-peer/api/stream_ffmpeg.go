@@ -92,6 +92,7 @@ func stopStream(udid string) {
 // @Accept json
 // @Produce plain
 // @Param request body StreamRequest true "Данные для запуска"
+// @Param        udid path string true "UDID устройства"
 // @Success 200 {string} string "Stream started"
 // @Failure 400 {string} string "Bad request"
 // @Failure 500 {string} string "Internal error"
@@ -124,6 +125,7 @@ func StartStream(c *gin.Context) {
 // @Description Останавливает текущий ffmpeg процесс
 // @Tags stream
 // @Produce plain
+// @Param        udid path string true "UDID устройства"
 // @Success 200 {string} string "Stream stopped"
 // @Router /device/{udid}/stream/stop [post]
 func StopStream(c *gin.Context) {
@@ -145,6 +147,7 @@ func StopStream(c *gin.Context) {
 // @Description Возвращает состояние стриминга
 // @Tags stream
 // @Produce plain
+// @Param        udid path string true "UDID устройства"
 // @Success 200 {string} string "running|stopped"
 // @Router /device/{udid}/stream/status [get]
 func StatusStream(c *gin.Context) {
