@@ -19,6 +19,7 @@ import (
 // @Description  Получить список установленных приложений на устройстве
 // @Tags         apps
 // @Produce      json
+// @Param        udid path string true "UDID устройства"
 // @Success      200 {object} []installationproxy.AppInfo
 // @Failure      500 {object} GenericResponse
 // @Router       /device/{udid}/apps [get]
@@ -40,6 +41,7 @@ func ListApps(c *gin.Context) {
 // @Tags         apps
 // @Produce      json
 // @Param        bundleID query string true "идентификатор bundle целевого приложения"
+// @Param        udid path string true "UDID устройства"
 // @Success      200  {object} GenericResponse
 // @Failure      500  {object} GenericResponse
 // @Router       /device/{udid}/apps/launch [post]
@@ -73,6 +75,7 @@ func LaunchApp(c *gin.Context) {
 // @Tags         apps
 // @Produce      json
 // @Param        bundleID query string true "идентификатор bundle целевого приложения"
+// @Param        udid path string true "UDID устройства"
 // @Success      200 {object} GenericResponse
 // @Failure      500 {object} GenericResponse
 // @Router       /device/{udid}/apps/kill [post]
@@ -150,6 +153,7 @@ func KillApp(c *gin.Context) {
 // @Tags         apps
 // @Produce      json
 // @Param        file formData file true "ipa-файл для установки"
+// @Param        udid path string true "UDID устройства"
 // @Success      200 {object} GenericResponse
 // @Failure      500 {object} GenericResponse
 // @Router       /device/{udid}/apps/install [post]
@@ -209,6 +213,7 @@ func InstallApp(c *gin.Context) {
 // @Tags         apps
 // @Produce      json
 // @Param        bundleID query string true "bundleID приложения"
+// @Param        udid path string true "UDID устройства"
 // @Success      200 {object} GenericResponse
 // @Failure      500 {object} GenericResponse
 // @Router       /device/{udid}/apps/uninstall [delete]
