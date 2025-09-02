@@ -10,18 +10,19 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/swag"
 
-	_ "goios-peer/docs"
+	"goios-peer/docs"
 )
 
 func StartRestAPI() {
+	basePath := "/api/v1"
 	router := gin.Default()
 	log := logrus.New()
 	myfile, _ := os.Create("go-ios.log")
 	gin.DefaultWriter = io.MultiWriter(myfile, os.Stdout)
 	TunnelStart()
 	router.Use(MyLogger(log), gin.Recovery())
-
-	v1 := router.Group("/api/v1")
+	docs.SwaggerInfo.BasePath = basePath
+	v1 := router.Group(basePath)
 	registerRoutes(v1)
 	if swag.GetSwagger("swagger") == nil {
 		logrus.Warn("Swagger spec is not loaded! Возможно, пакет docs не подключен.")

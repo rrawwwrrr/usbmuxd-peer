@@ -107,7 +107,7 @@ paths:
       - general_device_specific
       - activation
   /device/{udid}/apps:
-    post:
+    get:
       description: Получить список установленных приложений на устройстве
       produces:
       - application/json
@@ -468,20 +468,6 @@ paths:
       summary: Изменить текущее местоположение устройства
       tags:
       - general_device_specific
-  /list:
-    get:
-      description: Получить список устройств, которые в данный момент подключены.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Получить список устройств
-      tags:
-      - general
   /listen:
     get:
       description: Использует SSE для подключения к команде LISTEN

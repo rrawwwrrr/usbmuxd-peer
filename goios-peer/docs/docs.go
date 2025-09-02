@@ -47,7 +47,7 @@ const docTemplate = `{
             }
         },
         "/device/{udid}/apps": {
-            "post": {
+            "get": {
                 "description": "Получить список установленных приложений на устройстве",
                 "produces": [
                     "application/json"
@@ -584,27 +584,6 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/api.GenericResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/list": {
-            "get": {
-                "description": "Получить список устройств, которые в данный момент подключены.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "general"
-                ],
-                "summary": "Получить список устройств",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
                         }
                     }
                 }

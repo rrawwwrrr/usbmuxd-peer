@@ -8,8 +8,6 @@ var streamingMiddleWare = StreamingHeaderMiddleware()
 var mjpegMiddleWare = MJPEGHeadersMiddleware()
 
 func registerRoutes(router *gin.RouterGroup) {
-	router.GET("/list", List)
-
 	device := router.Group("/device/:udid")
 	device.Use(DeviceMiddleware())
 	simpleDeviceRoutes(device)
@@ -58,9 +56,9 @@ func wdaRoutes(group *gin.RouterGroup) {
 	router := group.Group("/wda")
 	router.Use(LimitNumClientsUDID())
 	router.POST("/session", CreateWdaSession)
-	router.GET("/stream/", mjpegMiddleWare, MJPEGProxyHandler)
-	router.GET("/session/:sessionId", ReadWdaSession)
-	router.DELETE("/session/:sessionId", DeleteWdaSession)
+	router.GET("/stream", mjpegMiddleWare, MJPEGProxyHandler)
+	router.GET("/session", ReadWdaSession)
+	router.DELETE("/session", DeleteWdaSession)
 }
 
 func streamRoutes(group *gin.RouterGroup) {
