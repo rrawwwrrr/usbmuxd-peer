@@ -208,9 +208,10 @@ func InstallApp(c *gin.Context) {
 // @Description  Удалить приложение с устройства по указанному bundleID
 // @Tags         apps
 // @Produce      json
-// @Param        bundleID query string true "идентификатор bundle целевого приложения"
+// @Param        bundleID  приложения
 // @Success      200 {object} GenericResponse
 // @Failure      500 {object} GenericResponse
+// @Router       /device/{udid}/apps/uninstall [delete]
 func UninstallApp(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
 

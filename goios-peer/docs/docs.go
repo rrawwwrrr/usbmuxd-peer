@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/device/{udid}/activate": {
             "post": {
-                "description": "Returns and error if activation fails. Otherwise  {\"message\":\"Activation successful\"}",
+                "description": "Возвращает ошибку, если активация не удалась. В противном случае {\"message\":\"Активация успешна\"}",
                 "produces": [
                     "application/json"
                 ],
@@ -25,11 +25,11 @@ const docTemplate = `{
                     "general_device_specific",
                     "activation"
                 ],
-                "summary": "Activate the device by udid",
+                "summary": "Активировать устройство по UDID",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Device UDID",
+                        "description": "UDID устройства",
                         "name": "udid",
                         "in": "path",
                         "required": true
@@ -48,14 +48,14 @@ const docTemplate = `{
         },
         "/device/{udid}/apps": {
             "post": {
-                "description": "List the installed apps on a device",
+                "description": "Получить список установленных приложений на устройстве",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "apps"
                 ],
-                "summary": "List apps on a device",
+                "summary": "Список приложений на устройстве",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -77,18 +77,18 @@ const docTemplate = `{
         },
         "/device/{udid}/apps/install": {
             "post": {
-                "description": "Install app on a device by uploading an ipa file",
+                "description": "Установить приложение на устройстве, загрузив ipa-файл",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "apps"
                 ],
-                "summary": "Install app on a device",
+                "summary": "Установка приложения на устройстве",
                 "parameters": [
                     {
                         "type": "file",
-                        "description": "ipa file to install",
+                        "description": "ipa-файл для установки",
                         "name": "file",
                         "in": "formData",
                         "required": true
@@ -112,18 +112,18 @@ const docTemplate = `{
         },
         "/device/{udid}/apps/kill": {
             "post": {
-                "description": "Kill running app on a device by provided bundleID",
+                "description": "Завершить работу приложения на устройстве по указанному bundleID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "apps"
                 ],
-                "summary": "Kill running app on a device",
+                "summary": "Завершение работы приложения на устройстве",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "bundle identifier of the targeted app",
+                        "description": "идентификатор bundle целевого приложения",
                         "name": "bundleID",
                         "in": "query",
                         "required": true
@@ -147,18 +147,18 @@ const docTemplate = `{
         },
         "/device/{udid}/apps/launch": {
             "post": {
-                "description": "Launch app on a device by provided bundleID",
+                "description": "Запустить приложение на устройстве по указанному bundleID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "apps"
                 ],
-                "summary": "Launch app on a device",
+                "summary": "Запуск приложения на устройстве",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "bundle identifier of the targeted app",
+                        "description": "идентификатор bundle целевого приложения",
                         "name": "bundleID",
                         "in": "query",
                         "required": true
@@ -182,18 +182,18 @@ const docTemplate = `{
         },
         "/device/{udid}/conditions": {
             "get": {
-                "description": "Get a list of the available conditions that can be applied on the device",
+                "description": "Получить список условий, которые можно применить к устройству",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "general_device_specific"
                 ],
-                "summary": "Get a list of available device conditions",
+                "summary": "Получить список доступных условий устройства",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Device UDID",
+                        "description": "UDID устройства",
                         "name": "udid",
                         "in": "path",
                         "required": true
@@ -220,18 +220,18 @@ const docTemplate = `{
         },
         "/device/{udid}/disable-condition": {
             "post": {
-                "description": "Disable the currently active condition on a device",
+                "description": "Отключает текущее активное условие на устройстве",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "general_device_specific"
                 ],
-                "summary": "Disable the currently active condition on a device",
+                "summary": "Отключить текущее активное условие на устройстве",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Device UDID",
+                        "description": "UDID устройства",
                         "name": "udid",
                         "in": "path",
                         "required": true
@@ -255,32 +255,32 @@ const docTemplate = `{
         },
         "/device/{udid}/enable-condition": {
             "put": {
-                "description": "Enable condition on a device by provided profileTypeID and profileID",
+                "description": "Включает условие на устройстве по указанным profileTypeID и profileID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "general_device_specific"
                 ],
-                "summary": "Enable condition on a device",
+                "summary": "Включить условие на устройстве",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Device UDID",
+                        "description": "UDID устройства",
                         "name": "udid",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Identifier of the profile type, eg. SlowNetworkCondition",
+                        "description": "Идентификатор типа профиля, например SlowNetworkCondition",
                         "name": "profileTypeID",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Identifier of the sub-profile, eg. SlowNetwork100PctLoss",
+                        "description": "Идентификатор под-профиля, например SlowNetwork100PctLoss",
                         "name": "profileID",
                         "in": "query",
                         "required": true
@@ -304,25 +304,18 @@ const docTemplate = `{
         },
         "/device/{udid}/info": {
             "get": {
-                "description": "Returns all lockdown values and additional instruments properties for development enabled devices.",
+                "description": "Возвращает все значения lockdown и дополнительные свойства instruments для устройств с включенной разработкой.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "general_device_specific"
                 ],
-                "summary": "Get lockdown info for a device by udid",
+                "summary": "Получить информацию о блокировке устройства по UDID",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "device udid",
-                        "name": "udid",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Device UDID",
+                        "description": "UDID устройства",
                         "name": "udid",
                         "in": "path",
                         "required": true
@@ -341,38 +334,38 @@ const docTemplate = `{
         },
         "/device/{udid}/pair": {
             "post": {
-                "description": "Pair a device with/without supervision",
+                "description": "Сопряжение устройства с/без режима Supervised",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "general_device_specific"
                 ],
-                "summary": "Pair a device with/without supervision",
+                "summary": "Сопряжение устройства с/без режима Supervised",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Device UDID",
+                        "description": "UDID устройства",
                         "name": "udid",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Set if device is supervised - true/false",
+                        "description": "Установить, находится ли устройство в режиме Supervised - true/false",
                         "name": "supervised",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "file",
-                        "description": "Supervision *.p12 file",
+                        "description": "Файл Supervision *.p12",
                         "name": "p12file",
                         "in": "formData"
                     },
                     {
                         "type": "string",
-                        "description": "Supervision password",
+                        "description": "Пароль для Supervision",
                         "name": "supervision_password",
                         "in": "formData"
                     }
@@ -401,18 +394,18 @@ const docTemplate = `{
         },
         "/device/{udid}/profiles": {
             "get": {
-                "description": "get the list of installed profiles from the ios device",
+                "description": "Получить список установленных профилей на iOS-устройстве",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "general_device_specific"
                 ],
-                "summary": "get the list of profiles",
+                "summary": "Получить список профилей",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Device UDID",
+                        "description": "UDID устройства",
                         "name": "udid",
                         "in": "path",
                         "required": true
@@ -443,18 +436,18 @@ const docTemplate = `{
         },
         "/device/{udid}/resetlocation": {
             "post": {
-                "description": "Reset the changed device location to the actual one",
+                "description": "Сбрасывает изменённое местоположение устройства к реальному",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "general_device_specific"
                 ],
-                "summary": "Reset the changed device location",
+                "summary": "Сброс изменённого местоположения устройства",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Device UDID",
+                        "description": "UDID устройства",
                         "name": "udid",
                         "in": "path",
                         "required": true
@@ -475,25 +468,18 @@ const docTemplate = `{
         },
         "/device/{udid}/screenshot": {
             "get": {
-                "description": "Takes a png screenshot and returns it.",
+                "description": "Делает скриншот в формате PNG и возвращает его.",
                 "produces": [
                     "image/png"
                 ],
                 "tags": [
                     "general_device_specific"
                 ],
-                "summary": "Get screenshot for device",
+                "summary": "Получить скриншот устройства",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "device udid",
-                        "name": "udid",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Device UDID",
+                        "description": "UDID устройства",
                         "name": "udid",
                         "in": "path",
                         "required": true
@@ -515,32 +501,32 @@ const docTemplate = `{
         },
         "/device/{udid}/setlocation": {
             "post": {
-                "description": "Change the current device location to provided latitude and longtitude",
+                "description": "Изменяет текущее местоположение устройства на указанные широту и долготу",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "general_device_specific"
                 ],
-                "summary": "Change the current device location",
+                "summary": "Изменить текущее местоположение устройства",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Location latitude",
+                        "description": "Широта местоположения",
                         "name": "latitude",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Location longtitude",
+                        "description": "Долгота местоположения",
                         "name": "longtitude",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Device UDID",
+                        "description": "UDID устройства",
                         "name": "udid",
                         "in": "path",
                         "required": true
@@ -570,14 +556,14 @@ const docTemplate = `{
         },
         "/list": {
             "get": {
-                "description": "get device list of currently connected devices.",
+                "description": "Получить список устройств, которые в данный момент подключены.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "general"
                 ],
-                "summary": "Get device list",
+                "summary": "Получить список устройств",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -591,14 +577,14 @@ const docTemplate = `{
         },
         "/listen": {
             "get": {
-                "description": "Uses SSE to connect to the LISTEN command",
+                "description": "Использует SSE для подключения к команде LISTEN",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "general"
                 ],
-                "summary": "Uses SSE to connect to the LISTEN command",
+                "summary": "Использует SSE для подключения к команде LISTEN",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -612,14 +598,14 @@ const docTemplate = `{
         },
         "/notifications": {
             "get": {
-                "description": "uses instruments to get application state change events",
+                "description": "Использует instruments для получения событий изменения состояния приложений",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "general"
                 ],
-                "summary": "uses instruments to get application state change events",
+                "summary": "Использует instruments для получения событий изменения состояния приложений",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -678,9 +664,119 @@ const docTemplate = `{
                 }
             }
         },
-        "/wda/session": {
+        "/start": {
             "post": {
-                "description": "Create a new WebDriverAgent session for the specified device",
+                "description": "Стартует ретрансляцию MJPEG -\u003e H264 -\u003e RTP",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "stream"
+                ],
+                "summary": "Запуск стрима",
+                "parameters": [
+                    {
+                        "description": "Данные для запуска",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.StreamRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Stream started",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/status": {
+            "get": {
+                "description": "Возвращает состояние стриминга",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "stream"
+                ],
+                "summary": "Статус стрима",
+                "responses": {
+                    "200": {
+                        "description": "running|stopped",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/stop": {
+            "post": {
+                "description": "Останавливает текущий ffmpeg процесс",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "stream"
+                ],
+                "summary": "Остановка стрима",
+                "responses": {
+                    "200": {
+                        "description": "Stream stopped",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/wda/session": {
+            "get": {
+                "description": "Получить активную сессию WebDriverAgent для указанного устройства (по UDID)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebDriverAgent"
+                ],
+                "summary": "Получить активную сессию WebDriverAgent",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.WdaSession"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создать новую сессию WebDriverAgent для указанного устройства (одна сессия на UDID)",
                 "consumes": [
                     "application/json"
                 ],
@@ -690,10 +786,10 @@ const docTemplate = `{
                 "tags": [
                     "WebDriverAgent"
                 ],
-                "summary": "Create a new WDA session",
+                "summary": "Создать новую сессию WDA",
                 "parameters": [
                     {
-                        "description": "WebDriverAgent Configuration",
+                        "description": "Конфигурация WebDriverAgent",
                         "name": "config",
                         "in": "body",
                         "required": true,
@@ -716,60 +812,16 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/wda/session/{sessionId}": {
-            "get": {
-                "description": "Get a WebDriverAgent session by sessionId",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "WebDriverAgent"
-                ],
-                "summary": "Get a WebDriverAgent session",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Session ID",
-                        "name": "sessionId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/api.WdaSession"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.GenericResponse"
-                        }
-                    }
-                }
             },
             "delete": {
-                "description": "Delete a WebDriverAgent session by sessionId",
+                "description": "Удалить активную сессию WebDriverAgent для указанного устройства (по UDID)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "WebDriverAgent"
                 ],
-                "summary": "Delete a WebDriverAgent session",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Session ID",
-                        "name": "sessionId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "summary": "Удалить сессию WebDriverAgent",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -777,8 +829,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/api.WdaSession"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/api.GenericResponse"
                         }
@@ -796,6 +848,19 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "api.StreamRequest": {
+            "type": "object",
+            "properties": {
+                "port": {
+                    "type": "integer",
+                    "example": 5004
+                },
+                "url": {
+                    "type": "string",
+                    "example": "192.168.1.50"
                 }
             }
         },

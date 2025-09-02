@@ -6,6 +6,15 @@ definitions:
       message:
         type: string
     type: object
+  api.StreamRequest:
+    properties:
+      port:
+        example: 5004
+        type: integer
+      url:
+        example: 192.168.1.50
+        type: string
+    type: object
   api.WdaConfig:
     properties:
       args:
@@ -77,10 +86,10 @@ info:
 paths:
   /device/{udid}/activate:
     post:
-      description: Returns and error if activation fails. Otherwise  {"message":"Activation
-        successful"}
+      description: Возвращает ошибку, если активация не удалась. В противном случае
+        {"message":"Активация успешна"}
       parameters:
-      - description: Device UDID
+      - description: UDID устройства
         in: path
         name: udid
         required: true
@@ -93,13 +102,13 @@ paths:
           schema:
             additionalProperties: true
             type: object
-      summary: Activate the device by udid
+      summary: Активировать устройство по UDID
       tags:
       - general_device_specific
       - activation
   /device/{udid}/apps:
     post:
-      description: List the installed apps on a device
+      description: Получить список установленных приложений на устройстве
       produces:
       - application/json
       responses:
@@ -113,14 +122,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.GenericResponse'
-      summary: List apps on a device
+      summary: Список приложений на устройстве
       tags:
       - apps
   /device/{udid}/apps/install:
     post:
-      description: Install app on a device by uploading an ipa file
+      description: Установить приложение на устройстве, загрузив ipa-файл
       parameters:
-      - description: ipa file to install
+      - description: ipa-файл для установки
         in: formData
         name: file
         required: true
@@ -136,14 +145,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.GenericResponse'
-      summary: Install app on a device
+      summary: Установка приложения на устройстве
       tags:
       - apps
   /device/{udid}/apps/kill:
     post:
-      description: Kill running app on a device by provided bundleID
+      description: Завершить работу приложения на устройстве по указанному bundleID
       parameters:
-      - description: bundle identifier of the targeted app
+      - description: идентификатор bundle целевого приложения
         in: query
         name: bundleID
         required: true
@@ -159,14 +168,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.GenericResponse'
-      summary: Kill running app on a device
+      summary: Завершение работы приложения на устройстве
       tags:
       - apps
   /device/{udid}/apps/launch:
     post:
-      description: Launch app on a device by provided bundleID
+      description: Запустить приложение на устройстве по указанному bundleID
       parameters:
-      - description: bundle identifier of the targeted app
+      - description: идентификатор bundle целевого приложения
         in: query
         name: bundleID
         required: true
@@ -182,15 +191,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.GenericResponse'
-      summary: Launch app on a device
+      summary: Запуск приложения на устройстве
       tags:
       - apps
   /device/{udid}/conditions:
     get:
-      description: Get a list of the available conditions that can be applied on the
-        device
+      description: Получить список условий, которые можно применить к устройству
       parameters:
-      - description: Device UDID
+      - description: UDID устройства
         in: path
         name: udid
         required: true
@@ -208,14 +216,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.GenericResponse'
-      summary: Get a list of available device conditions
+      summary: Получить список доступных условий устройства
       tags:
       - general_device_specific
   /device/{udid}/disable-condition:
     post:
-      description: Disable the currently active condition on a device
+      description: Отключает текущее активное условие на устройстве
       parameters:
-      - description: Device UDID
+      - description: UDID устройства
         in: path
         name: udid
         required: true
@@ -231,24 +239,24 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.GenericResponse'
-      summary: Disable the currently active condition on a device
+      summary: Отключить текущее активное условие на устройстве
       tags:
       - general_device_specific
   /device/{udid}/enable-condition:
     put:
-      description: Enable condition on a device by provided profileTypeID and profileID
+      description: Включает условие на устройстве по указанным profileTypeID и profileID
       parameters:
-      - description: Device UDID
+      - description: UDID устройства
         in: path
         name: udid
         required: true
         type: string
-      - description: Identifier of the profile type, eg. SlowNetworkCondition
+      - description: Идентификатор типа профиля, например SlowNetworkCondition
         in: query
         name: profileTypeID
         required: true
         type: string
-      - description: Identifier of the sub-profile, eg. SlowNetwork100PctLoss
+      - description: Идентификатор под-профиля, например SlowNetwork100PctLoss
         in: query
         name: profileID
         required: true
@@ -264,20 +272,15 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.GenericResponse'
-      summary: Enable condition on a device
+      summary: Включить условие на устройстве
       tags:
       - general_device_specific
   /device/{udid}/info:
     get:
-      description: Returns all lockdown values and additional instruments properties
-        for development enabled devices.
+      description: Возвращает все значения lockdown и дополнительные свойства instruments
+        для устройств с включенной разработкой.
       parameters:
-      - description: device udid
-        in: path
-        name: udid
-        required: true
-        type: string
-      - description: Device UDID
+      - description: UDID устройства
         in: path
         name: udid
         required: true
@@ -290,28 +293,28 @@ paths:
           schema:
             additionalProperties: true
             type: object
-      summary: Get lockdown info for a device by udid
+      summary: Получить информацию о блокировке устройства по UDID
       tags:
       - general_device_specific
   /device/{udid}/pair:
     post:
-      description: Pair a device with/without supervision
+      description: Сопряжение устройства с/без режима Supervised
       parameters:
-      - description: Device UDID
+      - description: UDID устройства
         in: path
         name: udid
         required: true
         type: string
-      - description: Set if device is supervised - true/false
+      - description: Установить, находится ли устройство в режиме Supervised - true/false
         in: query
         name: supervised
         required: true
         type: string
-      - description: Supervision *.p12 file
+      - description: Файл Supervision *.p12
         in: formData
         name: p12file
         type: file
-      - description: Supervision password
+      - description: Пароль для Supervision
         in: formData
         name: supervision_password
         type: string
@@ -330,14 +333,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.GenericResponse'
-      summary: Pair a device with/without supervision
+      summary: Сопряжение устройства с/без режима Supervised
       tags:
       - general_device_specific
   /device/{udid}/profiles:
     get:
-      description: get the list of installed profiles from the ios device
+      description: Получить список установленных профилей на iOS-устройстве
       parameters:
-      - description: Device UDID
+      - description: UDID устройства
         in: path
         name: udid
         required: true
@@ -358,14 +361,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.GenericResponse'
-      summary: get the list of profiles
+      summary: Получить список профилей
       tags:
       - general_device_specific
   /device/{udid}/resetlocation:
     post:
-      description: Reset the changed device location to the actual one
+      description: Сбрасывает изменённое местоположение устройства к реальному
       parameters:
-      - description: Device UDID
+      - description: UDID устройства
         in: path
         name: udid
         required: true
@@ -379,19 +382,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.GenericResponse'
-      summary: Reset the changed device location
+      summary: Сброс изменённого местоположения устройства
       tags:
       - general_device_specific
   /device/{udid}/screenshot:
     get:
-      description: Takes a png screenshot and returns it.
+      description: Делает скриншот в формате PNG и возвращает его.
       parameters:
-      - description: device udid
-        in: path
-        name: udid
-        required: true
-        type: string
-      - description: Device UDID
+      - description: UDID устройства
         in: path
         name: udid
         required: true
@@ -406,24 +404,25 @@ paths:
               format: int32
               type: integer
             type: array
-      summary: Get screenshot for device
+      summary: Получить скриншот устройства
       tags:
       - general_device_specific
   /device/{udid}/setlocation:
     post:
-      description: Change the current device location to provided latitude and longtitude
+      description: Изменяет текущее местоположение устройства на указанные широту
+        и долготу
       parameters:
-      - description: Location latitude
+      - description: Широта местоположения
         in: query
         name: latitude
         required: true
         type: string
-      - description: Location longtitude
+      - description: Долгота местоположения
         in: query
         name: longtitude
         required: true
         type: string
-      - description: Device UDID
+      - description: UDID устройства
         in: path
         name: udid
         required: true
@@ -443,12 +442,12 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api.GenericResponse'
-      summary: Change the current device location
+      summary: Изменить текущее местоположение устройства
       tags:
       - general_device_specific
   /list:
     get:
-      description: get device list of currently connected devices.
+      description: Получить список устройств, которые в данный момент подключены.
       produces:
       - application/json
       responses:
@@ -457,12 +456,12 @@ paths:
           schema:
             additionalProperties: true
             type: object
-      summary: Get device list
+      summary: Получить список устройств
       tags:
       - general
   /listen:
     get:
-      description: Uses SSE to connect to the LISTEN command
+      description: Использует SSE для подключения к команде LISTEN
       produces:
       - application/json
       responses:
@@ -471,12 +470,13 @@ paths:
           schema:
             additionalProperties: true
             type: object
-      summary: Uses SSE to connect to the LISTEN command
+      summary: Использует SSE для подключения к команде LISTEN
       tags:
       - general
   /notifications:
     get:
-      description: uses instruments to get application state change events
+      description: Использует instruments для получения событий изменения состояния
+        приложений
       produces:
       - application/json
       responses:
@@ -485,7 +485,7 @@ paths:
           schema:
             additionalProperties: true
             type: object
-      summary: uses instruments to get application state change events
+      summary: Использует instruments для получения событий изменения состояния приложений
       tags:
       - general
   /screenstream:
@@ -520,13 +520,104 @@ paths:
       summary: MJPEG Stream
       tags:
       - stream
-  /wda/session:
+  /start:
     post:
       consumes:
       - application/json
-      description: Create a new WebDriverAgent session for the specified device
+      description: Стартует ретрансляцию MJPEG -> H264 -> RTP
       parameters:
-      - description: WebDriverAgent Configuration
+      - description: Данные для запуска
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.StreamRequest'
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Stream started
+          schema:
+            type: string
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "500":
+          description: Internal error
+          schema:
+            type: string
+      summary: Запуск стрима
+      tags:
+      - stream
+  /status:
+    get:
+      description: Возвращает состояние стриминга
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: running|stopped
+          schema:
+            type: string
+      summary: Статус стрима
+      tags:
+      - stream
+  /stop:
+    post:
+      description: Останавливает текущий ffmpeg процесс
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Stream stopped
+          schema:
+            type: string
+      summary: Остановка стрима
+      tags:
+      - stream
+  /wda/session:
+    delete:
+      description: Удалить активную сессию WebDriverAgent для указанного устройства
+        (по UDID)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.WdaSession'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Удалить сессию WebDriverAgent
+      tags:
+      - WebDriverAgent
+    get:
+      description: Получить активную сессию WebDriverAgent для указанного устройства
+        (по UDID)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.WdaSession'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Получить активную сессию WebDriverAgent
+      tags:
+      - WebDriverAgent
+    post:
+      consumes:
+      - application/json
+      description: Создать новую сессию WebDriverAgent для указанного устройства (одна
+        сессия на UDID)
+      parameters:
+      - description: Конфигурация WebDriverAgent
         in: body
         name: config
         required: true
@@ -543,52 +634,7 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/api.GenericResponse'
-      summary: Create a new WDA session
-      tags:
-      - WebDriverAgent
-  /wda/session/{sessionId}:
-    delete:
-      description: Delete a WebDriverAgent session by sessionId
-      parameters:
-      - description: Session ID
-        in: path
-        name: sessionId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/api.WdaSession'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/api.GenericResponse'
-      summary: Delete a WebDriverAgent session
-      tags:
-      - WebDriverAgent
-    get:
-      description: Get a WebDriverAgent session by sessionId
-      parameters:
-      - description: Session ID
-        in: path
-        name: sessionId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/api.WdaSession'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/api.GenericResponse'
-      summary: Get a WebDriverAgent session
+      summary: Создать новую сессию WDA
       tags:
       - WebDriverAgent
 swagger: "2.0"

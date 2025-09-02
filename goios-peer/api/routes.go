@@ -51,7 +51,7 @@ func appRoutes(group *gin.RouterGroup) {
 	router.POST("/launch", LaunchApp)
 	router.POST("/kill", KillApp)
 	router.POST("/install", InstallApp)
-	router.POST("/uninstall", UninstallApp)
+	router.DELETE("/uninstall", UninstallApp)
 }
 
 func wdaRoutes(group *gin.RouterGroup) {
