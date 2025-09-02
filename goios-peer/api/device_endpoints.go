@@ -23,7 +23,7 @@ import (
 // Info                godoc
 // @Summary      Активировать устройство по UDID
 // @Description  Возвращает ошибку, если активация не удалась. В противном случае {"message":"Активация успешна"}
-// @Tags         general_device_specific, activation
+// @Tags         general_device_specific
 // @Produce      json
 // @Success      200  {object}  map[string]interface{}
 // @Param        udid path string true "UDID устройства"
@@ -312,7 +312,7 @@ func GetSupportedConditions(c *gin.Context) {
 // @Param        profileID  query      string  true  "Идентификатор под-профиля, например SlowNetwork100PctLoss"
 // @Success      200  {object}  GenericResponse
 // @Failure      500  {object}  GenericResponse
-// @Router       /device/{udid}/enable-condition [put]
+// @Router       /device/{udid}/conditions [put]
 func EnableDeviceCondition(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
 	udid := device.Properties.SerialNumber
@@ -381,7 +381,7 @@ func EnableDeviceCondition(c *gin.Context) {
 // @Success      200  {object}  GenericResponse
 // @Failure      500  {object}  GenericResponse
 // @Param        udid path string true "UDID устройства"
-// @Router       /device/{udid}/disable-condition [post]
+// @Router       /device/{udid}/conditions [post]
 func DisableDeviceCondition(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
 	udid := device.Properties.SerialNumber
