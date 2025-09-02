@@ -21,7 +21,7 @@ import (
 // @Produce      json
 // @Success      200 {object} []installationproxy.AppInfo
 // @Failure      500 {object} GenericResponse
-// @Router       /device/{udid}/apps [post]
+// @Router       /device/{udid}/apps [get]
 func ListApps(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
 	svc, _ := installationproxy.New(device)
