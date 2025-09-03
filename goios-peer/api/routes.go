@@ -33,7 +33,7 @@ func simpleDeviceRoutes(device *gin.RouterGroup) {
 
 	device.POST("/resetlocation", ResetLocation)
 	device.GET("/screenshot", Screenshot)
-	//device.GET("/stream", mjpegMiddleWare, MJPEGStreamHandler)
+	device.GET("/stream", mjpegMiddleWare, MJPEGStreamHandler)
 	device.PUT("/setlocation", SetLocation)
 	device.GET("/syslog", streamingMiddleWare, Syslog)
 

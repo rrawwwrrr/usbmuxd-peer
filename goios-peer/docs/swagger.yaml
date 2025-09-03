@@ -105,10 +105,15 @@ paths:
       summary: Активировать устройство по UDID
       tags:
       - general_device_specific
-      - activation
   /device/{udid}/apps:
     get:
       description: Получить список установленных приложений на устройстве
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -134,6 +139,11 @@ paths:
         name: file
         required: true
         type: file
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -155,6 +165,11 @@ paths:
       - description: идентификатор bundle целевого приложения
         in: query
         name: bundleID
+        required: true
+        type: string
+      - description: UDID устройства
+        in: path
+        name: udid
         required: true
         type: string
       produces:
@@ -180,6 +195,11 @@ paths:
         name: bundleID
         required: true
         type: string
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -201,6 +221,11 @@ paths:
       - description: bundleID приложения
         in: query
         name: bundleID
+        required: true
+        type: string
+      - description: UDID устройства
+        in: path
+        name: udid
         required: true
         type: string
       produces:
@@ -242,7 +267,6 @@ paths:
       summary: Получить список доступных условий устройства
       tags:
       - general_device_specific
-  /device/{udid}/disable-condition:
     post:
       description: Отключает текущее активное условие на устройстве
       parameters:
@@ -265,7 +289,6 @@ paths:
       summary: Отключить текущее активное условие на устройстве
       tags:
       - general_device_specific
-  /device/{udid}/enable-condition:
     put:
       description: Включает условие на устройстве по указанным profileTypeID и profileID
       parameters:
@@ -503,6 +526,12 @@ paths:
   /device/{udid}/stream/listen:
     get:
       description: Использует SSE для подключения к команде LISTEN
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -526,6 +555,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/api.StreamRequest'
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
       produces:
       - text/plain
       responses:
@@ -547,6 +581,12 @@ paths:
   /device/{udid}/stream/status:
     get:
       description: Возвращает состояние стриминга
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
       produces:
       - text/plain
       responses:
@@ -560,6 +600,12 @@ paths:
   /device/{udid}/stream/stop:
     post:
       description: Останавливает текущий ffmpeg процесс
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
       produces:
       - text/plain
       responses:
@@ -574,6 +620,12 @@ paths:
     delete:
       description: Удалить активную сессию WebDriverAgent для указанного устройства
         (по UDID)
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -591,6 +643,12 @@ paths:
     get:
       description: Получить активную сессию WebDriverAgent для указанного устройства
         (по UDID)
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -617,6 +675,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/api.WdaConfig'
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
       produces:
       - application/json
       responses:

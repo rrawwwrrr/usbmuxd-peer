@@ -22,8 +22,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "general_device_specific",
-                    "activation"
+                    "general_device_specific"
                 ],
                 "summary": "Активировать устройство по UDID",
                 "parameters": [
@@ -56,6 +55,15 @@ const docTemplate = `{
                     "apps"
                 ],
                 "summary": "Список приложений на устройстве",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -92,6 +100,13 @@ const docTemplate = `{
                         "name": "file",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -126,6 +141,13 @@ const docTemplate = `{
                         "description": "идентификатор bundle целевого приложения",
                         "name": "bundleID",
                         "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -162,6 +184,13 @@ const docTemplate = `{
                         "name": "bundleID",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -196,6 +225,13 @@ const docTemplate = `{
                         "description": "bundleID приложения",
                         "name": "bundleID",
                         "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -251,44 +287,7 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/device/{udid}/disable-condition": {
-            "post": {
-                "description": "Отключает текущее активное условие на устройстве",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "general_device_specific"
-                ],
-                "summary": "Отключить текущее активное условие на устройстве",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "UDID устройства",
-                        "name": "udid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/api.GenericResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.GenericResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/device/{udid}/enable-condition": {
+            },
             "put": {
                 "description": "Включает условие на устройстве по указанным profileTypeID и profileID",
                 "produces": [
@@ -318,6 +317,39 @@ const docTemplate = `{
                         "description": "Идентификатор под-профиля, например SlowNetwork100PctLoss",
                         "name": "profileID",
                         "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Отключает текущее активное условие на устройстве",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general_device_specific"
+                ],
+                "summary": "Отключить текущее активное условие на устройстве",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -646,6 +678,15 @@ const docTemplate = `{
                     "general"
                 ],
                 "summary": "Использует SSE для подключения к команде LISTEN",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -679,6 +720,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/api.StreamRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -713,6 +761,15 @@ const docTemplate = `{
                     "stream"
                 ],
                 "summary": "Статус стрима",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "running|stopped",
@@ -733,6 +790,15 @@ const docTemplate = `{
                     "stream"
                 ],
                 "summary": "Остановка стрима",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Stream stopped",
@@ -753,6 +819,15 @@ const docTemplate = `{
                     "WebDriverAgent"
                 ],
                 "summary": "Получить активную сессию WebDriverAgent",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -789,6 +864,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/api.WdaConfig"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -815,6 +897,15 @@ const docTemplate = `{
                     "WebDriverAgent"
                 ],
                 "summary": "Удалить сессию WebDriverAgent",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
