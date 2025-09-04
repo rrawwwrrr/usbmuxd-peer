@@ -1,4 +1,4 @@
-FROM golang:1.24.2 as builder
+FROM golang:1.25 as builder
 RUN apt-get update && apt-get -y install unzip wget curl git
 WORKDIR /app
 COPY goios-peer .
