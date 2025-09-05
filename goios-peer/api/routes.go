@@ -58,7 +58,6 @@ func appRoutes(group *gin.RouterGroup) {
 
 func wdaRoutes(group *gin.RouterGroup) {
 	router := group.Group("/wda")
-	router.Use(LimitNumClientsUDID())
 	router.POST("/session", CreateWdaSession)
 	router.GET("/stream", mjpegMiddleWare, MJPEGProxyHandler)
 	router.GET("/session", ReadWdaSession)
