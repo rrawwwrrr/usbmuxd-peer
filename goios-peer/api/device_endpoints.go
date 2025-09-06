@@ -2,7 +2,6 @@ package api
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -467,7 +466,7 @@ func PairDevice(c *gin.Context) {
 	c.JSON(http.StatusOK, GenericResponse{Message: "Device paired"})
 }
 
-func GetInfoFirstDevice() DeviceInfo {
+func GetInfoFirstDevice() map[string]interface{} {
 	const maxAttempts = 10
 
 	for attempt := 1; attempt <= maxAttempts; attempt++ {
@@ -503,27 +502,10 @@ func GetInfoFirstDevice() DeviceInfo {
 			}
 		}
 
-		var deviceInfo DeviceInfo
-		err = fillStructFromMap(allValues, &deviceInfo)
 		log.Info(allValues)
-		if err != nil {
-			log.WithError(err).Infof("Failed to fill device info (attempt %d/%d)", attempt, maxAttempts)
-			time.Sleep(time.Second)
-			continue
-		}
-		return deviceInfo
+		return allValues
 	}
 
 	log.Fatal("Failed to get device info after 10 attempts, exiting application")
-	return DeviceInfo{}
-}
-
-func fillStructFromMap(allValues map[string]interface{}, out interface{}) error {
-	// Сначала преобразуем map в JSON
-	data, err := json.Marshal(allValues)
-	if err != nil {
-		return err
-	}
-	// Потом распакуем JSON в структуру
-	return json.Unmarshal(data, out)
+	return nil // log.Fatal завершает выполнение, эта строка не будет достигнута
 }

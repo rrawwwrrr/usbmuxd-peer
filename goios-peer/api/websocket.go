@@ -10,8 +10,8 @@ import (
 )
 
 type State struct {
-	Device DeviceInfo `json:"info"`
-	Wda    WdaStatus  `json:"wda"`
+	Device map[string]interface{} `json:"info"`
+	Wda    WdaStatus              `json:"wda"`
 }
 
 type DeviceInfo struct {
