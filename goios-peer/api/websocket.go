@@ -18,6 +18,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func serveWs(w http.ResponseWriter, r *http.Request) {
+	log.Info("Websocket upgrader...")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Error("Ошибка при обновлении соединения:", err)
@@ -34,6 +35,8 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 			"data": info,
 		}
 		data, _ := json.Marshal(msg)
+		log.Info("send ws")
+		log.Info(string(data))
 		err := conn.WriteMessage(websocket.TextMessage, data)
 		if err != nil {
 			log.Error("Ошибка при отправке device_info_first:", err)
