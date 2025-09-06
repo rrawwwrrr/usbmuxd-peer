@@ -48,6 +48,8 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 
 	// 2. Отправляем все последние статусы
 	for _, status := range lastStatuses {
+		log.Info("send ws status")
+		log.Info(string(status))
 		err := conn.WriteMessage(websocket.TextMessage, status)
 		if err != nil {
 			log.Error("Ошибка при отправке статуса новому клиенту:", err)
