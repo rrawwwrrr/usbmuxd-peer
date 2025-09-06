@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -465,34 +466,47 @@ func PairDevice(c *gin.Context) {
 	c.JSON(http.StatusOK, GenericResponse{Message: "Device paired"})
 }
 
-func GetInfoFirstDevice() map[string]interface{} {
+func GetInfoFirstDevice() DeviceInfo {
 	devices, err := ios.ListDevices()
-	if err != nil {
+	if err != nil || len(devices.DeviceList) == 0 {
 		log.Info("Failed to list devices")
-		return nil
+		return DeviceInfo{}
 	}
+
 	device := devices.DeviceList[0]
 	allValues, err := ios.GetValuesPlist(device)
 	if err != nil {
-		print(err)
+		log.Infof("Failed to get device values: %v", err)
 	}
+
 	svc, err := instruments.NewDeviceInfoService(device)
 	if err != nil {
 		log.Debugf("could not open instruments, probably dev image not mounted %v", err)
-	}
-	if err == nil {
-		info, err := svc.NetworkInformation()
-		if err != nil {
-			log.Debugf("error getting networkinfo from instruments %v", err)
-		} else {
+	} else {
+		if info, err := svc.NetworkInformation(); err == nil {
 			allValues["instruments:networkInformation"] = info
-		}
-		info, err = svc.HardwareInformation()
-		if err != nil {
-			log.Debugf("error getting hardwareinfo from instruments %v", err)
 		} else {
+			log.Debugf("error getting networkinfo from instruments %v", err)
+		}
+
+		if info, err := svc.HardwareInformation(); err == nil {
 			allValues["instruments:hardwareInformation"] = info
+		} else {
+			log.Debugf("error getting hardwareinfo from instruments %v", err)
 		}
 	}
-	return allValues
+
+	var deviceInfo DeviceInfo
+	fillStructFromMap(allValues, &deviceInfo)
+	return deviceInfo
+}
+
+func fillStructFromMap(allValues map[string]interface{}, out interface{}) error {
+	// Сначала преобразуем map в JSON
+	data, err := json.Marshal(allValues)
+	if err != nil {
+		return err
+	}
+	// Потом распакуем JSON в структуру
+	return json.Unmarshal(data, out)
 }

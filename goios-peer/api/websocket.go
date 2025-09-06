@@ -10,8 +10,8 @@ import (
 )
 
 type State struct {
-	Devices   map[string]DeviceInfo `json:"devices"`
-	WdaStatus map[string]WdaStatus  `json:"wdaStatus"`
+	Devices   DeviceInfo `json:"devices"`
+	WdaStatus WdaStatus  `json:"wdaStatus"`
 }
 
 type DeviceInfo struct {
@@ -102,8 +102,8 @@ var (
 	clients   = make(map[*websocket.Conn]bool) // Активные подключения
 	broadcast = make(chan []byte)              // Канал рассылки
 	state     = &State{
-		Devices:   make(map[string]DeviceInfo),
-		WdaStatus: make(map[string]WdaStatus),
+		Devices:   GetInfoFirstDevice(),
+		WdaStatus: WdaStatus{},
 	}
 	stateMu  sync.RWMutex
 	upgrader = websocket.Upgrader{
@@ -172,19 +172,19 @@ func SendWSMessageToConn(conn *websocket.Conn, msgType string, data interface{})
 
 func UpdateWdaStatus(udid, status, sessionId, detail string) {
 	stateMu.Lock()
-	state.WdaStatus[udid] = WdaStatus{
+	state.WdaStatus = WdaStatus{
 		Status:    status,
 		SessionId: sessionId,
 		Detail:    detail,
 	}
-	updated := state.WdaStatus[udid]
+	updated := state.WdaStatus
 	stateMu.Unlock()
 	SendWSMessage("wda_status", map[string]interface{}{"udid": udid, "status": updated})
 }
 
-func UpdateDeviceInfo(info DeviceInfo) {
-	stateMu.Lock()
-	state.Devices[info.UniqueDeviceID] = info
-	stateMu.Unlock()
-	SendWSMessage("device_info", info)
-}
+//func UpdateDeviceInfo(info DeviceInfo) {
+//	stateMu.Lock()
+//	state.Device = info
+//	stateMu.Unlock()
+//	SendWSMessage("device_info", info)
+//}
