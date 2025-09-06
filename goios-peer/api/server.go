@@ -22,6 +22,8 @@ func StartRestAPI() {
 	TunnelStart()
 	router.Use(MyLogger(log), gin.Recovery())
 	docs.SwaggerInfo.BasePath = basePath
+	websocketRoutes(router)
+
 	v1 := router.Group(basePath)
 	registerRoutes(v1)
 	if swag.GetSwagger("swagger") == nil {
