@@ -15,6 +15,8 @@ func main() {
 	log.SetLevel(log.DebugLevel)
 	//goios.Start()
 	go socket.Start()
+	go api.HandleMessages()
+
 	api.StartRestAPI()
 
 }

@@ -67,7 +67,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleMessages() {
+func HandleMessages() {
 	for {
 		msg := <-broadcast
 		log.Infof("handleMessages: получено сообщение для рассылки, размер: %d байт, клиентов: %d", len(msg), len(clients))
