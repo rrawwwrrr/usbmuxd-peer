@@ -84,17 +84,18 @@ func HandleMessages() {
 }
 
 func SendWSMessage(msgType string, data interface{}) {
-	log.Info("SendWSMessage start")
+	log.Trace("SendWSMessage start")
 
 	msg := WSMessage{
 		Type: msgType,
 		Data: data,
 	}
-	log.Info(msg)
+	log.Debug("SendWSMessage msg")
+	log.Debug(msg)
 	b, _ := json.Marshal(msg)
 	broadcast <- b
 
-	log.Info("SendWSMessage stop")
+	log.Trace("SendWSMessage stop")
 }
 
 func SendWSMessageToConn(conn *websocket.Conn, msgType string, data interface{}) {
@@ -107,7 +108,7 @@ func SendWSMessageToConn(conn *websocket.Conn, msgType string, data interface{})
 }
 
 func UpdateWdaStatus(udid, status, sessionId, detail string) {
-	log.Info("Start update WDA")
+	log.Trace("Start update WDA")
 	stateMu.Lock()
 	state.Wda = WdaStatus{
 		Status:    status,
@@ -116,10 +117,10 @@ func UpdateWdaStatus(udid, status, sessionId, detail string) {
 	}
 	updated := state.Wda
 	stateMu.Unlock()
-	log.Info("Stop update WDA")
-	log.Info("Start send ws WDA")
+	log.Trace("Stop update WDA")
+	log.Trace("Start send ws WDA")
 	SendWSMessage("wda_status", map[string]interface{}{"udid": udid, "status": updated})
-	log.Info("Stop send ws WDA")
+	log.Trace("Stop send ws WDA")
 }
 
 //func UpdateDeviceInfo(info DeviceInfo) {

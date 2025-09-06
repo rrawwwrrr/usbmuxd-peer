@@ -74,7 +74,7 @@ func (f *WdaFactory) Create(device ios.DeviceEntry, config WdaConfig) (*WdaSessi
 	go f.runSession(ctx, session, device)
 
 	f.sessions.Store(udid, session)
-	UpdateWdaStatus("created", udid, session.SessionId, "Session created")
+	UpdateWdaStatus(udid, "created", session.SessionId, "Session created")
 
 	return &session, nil
 }
@@ -135,7 +135,7 @@ func (f *WdaFactory) Delete(udid string) (*WdaSession, bool) {
 	session := val.(WdaSession)
 	session.stopWda()
 	f.sessions.Delete(udid)
-	UpdateWdaStatus("deleted", udid, session.SessionId, "Session deleted")
+	UpdateWdaStatus(udid, "deleted", session.SessionId, "Session deleted")
 	return &session, true
 }
 
