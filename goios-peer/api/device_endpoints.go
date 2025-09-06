@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/danielpaulus/go-ios/ios/imagemounter"
 	"github.com/danielpaulus/go-ios/ios/mobileactivation"
@@ -467,43 +468,54 @@ func PairDevice(c *gin.Context) {
 }
 
 func GetInfoFirstDevice() DeviceInfo {
-	devices, err := ios.ListDevices()
-	if err != nil || len(devices.DeviceList) == 0 {
-		log.Info("Failed to list devices")
-		return DeviceInfo{}
-	}
+	const maxAttempts = 10
 
-	device := devices.DeviceList[0]
-	allValues, err := ios.GetValuesPlist(device)
-	if err != nil {
-		log.Infof("Failed to get device values: %v", err)
-	}
-
-	svc, err := instruments.NewDeviceInfoService(device)
-	if err != nil {
-		log.Debugf("could not open instruments, probably dev image not mounted %v", err)
-	} else {
-		if info, err := svc.NetworkInformation(); err == nil {
-			allValues["instruments:networkInformation"] = info
-		} else {
-			log.Debugf("error getting networkinfo from instruments %v", err)
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		devices, err := ios.ListDevices()
+		if err != nil || len(devices.DeviceList) == 0 {
+			log.Infof("Failed to list devices (attempt %d/%d)", attempt, maxAttempts)
+			time.Sleep(time.Second)
+			continue
 		}
 
-		if info, err := svc.HardwareInformation(); err == nil {
-			allValues["instruments:hardwareInformation"] = info
-		} else {
-			log.Debugf("error getting hardwareinfo from instruments %v", err)
+		device := devices.DeviceList[0]
+		allValues, err := ios.GetValuesPlist(device)
+		if err != nil {
+			log.Infof("Failed to get device values: %v (attempt %d/%d)", err, attempt, maxAttempts)
+			time.Sleep(time.Second)
+			continue
 		}
+
+		svc, err := instruments.NewDeviceInfoService(device)
+		if err != nil {
+			log.Debugf("could not open instruments, probably dev image not mounted %v", err)
+		} else {
+			if info, err := svc.NetworkInformation(); err == nil {
+				allValues["instruments:networkInformation"] = info
+			} else {
+				log.Debugf("error getting networkinfo from instruments %v", err)
+			}
+
+			if info, err := svc.HardwareInformation(); err == nil {
+				allValues["instruments:hardwareInformation"] = info
+			} else {
+				log.Debugf("error getting hardwareinfo from instruments %v", err)
+			}
+		}
+
+		var deviceInfo DeviceInfo
+		err = fillStructFromMap(allValues, &deviceInfo)
+		log.Info(allValues)
+		if err != nil {
+			log.WithError(err).Infof("Failed to fill device info (attempt %d/%d)", attempt, maxAttempts)
+			time.Sleep(time.Second)
+			continue
+		}
+		return deviceInfo
 	}
 
-	var deviceInfo DeviceInfo
-	err = fillStructFromMap(allValues, &deviceInfo)
-	log.Info(allValues)
-	if err != nil {
-		log.WithError(err).Info("Failed to fill device info")
-		return DeviceInfo{}
-	}
-	return deviceInfo
+	log.Fatal("Failed to get device info after 10 attempts, exiting application")
+	return DeviceInfo{}
 }
 
 func fillStructFromMap(allValues map[string]interface{}, out interface{}) error {
