@@ -48,6 +48,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	clients[conn] = true
+	log.Infof("Websocket подключен: %v (текущее количество клиентов: %d)", conn.RemoteAddr(), len(clients))
 
 	stateMu.RLock()
 	fullState := *state
@@ -57,8 +58,9 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, p, err := conn.ReadMessage()
 		if err != nil {
-			log.Error("Ошибка при чтении сообщения:", err)
+			log.Warnf("Клиент отключился: %v, причина: %v", conn.RemoteAddr(), err)
 			delete(clients, conn)
+			log.Infof("Клиент удалён: %v (текущее количество клиентов: %d)", conn.RemoteAddr(), len(clients))
 			break
 		}
 		broadcast <- p
@@ -68,12 +70,14 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 func handleMessages() {
 	for {
 		msg := <-broadcast
+		log.Infof("handleMessages: получено сообщение для рассылки, размер: %d байт, клиентов: %d", len(msg), len(clients))
 		for client := range clients {
 			err := client.WriteMessage(websocket.TextMessage, msg)
 			if err != nil {
-				log.Error("Ошибка при отправке сообщения:", err)
+				log.Errorf("Ошибка при отправке сообщения клиенту %v: %v", client.RemoteAddr(), err)
 				client.Close()
 				delete(clients, client)
+				log.Infof("Клиент удалён при ошибке отправки: %v (текущее количество клиентов: %d)", client.RemoteAddr(), len(clients))
 			}
 		}
 	}
