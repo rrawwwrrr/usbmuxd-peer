@@ -26,15 +26,35 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	clients[conn] = true // Добавляем подключение в список активных
-	//for _, status := range lastStatuses {
-	//	err := conn.WriteMessage(websocket.TextMessage, status)
-	//	if err != nil {
-	//		log.Error("Ошибка при отправке статуса новому клиенту:", err)
-	//		conn.Close()
-	//		delete(clients, conn)
-	//		return
-	//	}
-	//}
+
+	// 1. Отправляем информацию о первом устройстве
+	if info := GetInfoFirstDevice(); info != nil {
+		msg := map[string]interface{}{
+			"type": "device_info_first",
+			"data": info,
+		}
+		data, _ := json.Marshal(msg)
+		err := conn.WriteMessage(websocket.TextMessage, data)
+		if err != nil {
+			log.Error("Ошибка при отправке device_info_first:", err)
+			conn.Close()
+			delete(clients, conn)
+			return
+		}
+	}
+
+	// 2. Отправляем все последние статусы
+	for _, status := range lastStatuses {
+		err := conn.WriteMessage(websocket.TextMessage, status)
+		if err != nil {
+			log.Error("Ошибка при отправке статуса новому клиенту:", err)
+			conn.Close()
+			delete(clients, conn)
+			return
+		}
+	}
+
+	// 3. Основной цикл чтения
 	for {
 		_, p, err := conn.ReadMessage()
 		if err != nil {
