@@ -464,3 +464,35 @@ func PairDevice(c *gin.Context) {
 
 	c.JSON(http.StatusOK, GenericResponse{Message: "Device paired"})
 }
+
+func GetInfoFirstDevice() map[string]interface{} {
+	devices, err := ios.ListDevices()
+	if err != nil {
+		log.Info("Failed to list devices")
+		return nil
+	}
+	device := devices.DeviceList[0]
+	allValues, err := ios.GetValuesPlist(device)
+	if err != nil {
+		print(err)
+	}
+	svc, err := instruments.NewDeviceInfoService(device)
+	if err != nil {
+		log.Debugf("could not open instruments, probably dev image not mounted %v", err)
+	}
+	if err == nil {
+		info, err := svc.NetworkInformation()
+		if err != nil {
+			log.Debugf("error getting networkinfo from instruments %v", err)
+		} else {
+			allValues["instruments:networkInformation"] = info
+		}
+		info, err = svc.HardwareInformation()
+		if err != nil {
+			log.Debugf("error getting hardwareinfo from instruments %v", err)
+		} else {
+			allValues["instruments:hardwareInformation"] = info
+		}
+	}
+	return allValues
+}

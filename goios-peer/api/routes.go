@@ -15,6 +15,13 @@ func registerRoutes(router *gin.RouterGroup) {
 	wdaRoutes(device)
 	streamRoutes(device)
 	conditionsRoutes(device)
+	websocketRoutes(device)
+}
+
+func websocketRoutes(router *gin.RouterGroup) {
+	router.GET("/ws", func(c *gin.Context) {
+		serveWs(c.Writer, c.Request)
+	})
 }
 
 func simpleDeviceRoutes(device *gin.RouterGroup) {
