@@ -497,7 +497,12 @@ func GetInfoFirstDevice() DeviceInfo {
 	}
 
 	var deviceInfo DeviceInfo
-	fillStructFromMap(allValues, &deviceInfo)
+	err = fillStructFromMap(allValues, &deviceInfo)
+	log.Info(allValues)
+	if err != nil {
+		log.WithError(err).Info("Failed to fill device info")
+		return DeviceInfo{}
+	}
 	return deviceInfo
 }
 
