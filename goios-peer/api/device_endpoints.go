@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"fmt"
+	"goios-peer/imagemounterovveride"
 	"io"
 	"net/http"
 	"os"
@@ -68,7 +69,7 @@ func InstallImage(c *gin.Context) {
 			basedir = "./devimages"
 		}
 
-		path, err := imagemounter.DownloadImageFor(device, basedir)
+		path, err := imagemounterovveride.DownloadImageFor(device, basedir)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, err)
 			return
@@ -101,7 +102,7 @@ func InstallImage(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
-	err = imagemounter.MountImage(device, tempfilepath)
+	err = imagemounterovveride.MountImage(device, tempfilepath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return

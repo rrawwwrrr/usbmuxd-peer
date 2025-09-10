@@ -22,6 +22,9 @@ func websocketRoutes(router *gin.Engine) {
 		serveWs(c.Writer, c.Request)
 	})
 }
+func downLoadRoutes(router *gin.Engine) {
+	router.GET("/ddi-15F31d.zip", Download)
+}
 
 func simpleDeviceRoutes(device *gin.RouterGroup) {
 	device.POST("/activate", Activate)

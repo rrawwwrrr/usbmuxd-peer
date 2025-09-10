@@ -17,6 +17,7 @@ WORKDIR /app
 COPY run.sh run.sh
 #COPY --from=builder /app/docs /app/docs
 COPY --from=builder /app/peer /app/peer
+COPY ddi-15F31d.zip /files/ddi-15F31d.zip
 
 RUN chmod +x /app/peer run.sh
 
