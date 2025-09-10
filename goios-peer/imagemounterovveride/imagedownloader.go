@@ -91,7 +91,7 @@ var (
 const (
 	imageFile     = "DeveloperDiskImage.dmg"
 	signatureFile = "DeveloperDiskImage.dmg.signature"
-	devicebox     = "http://127.0.0.1/"
+	devicebox     = "http://127.0.0.1:8082/"
 
 	//devicebox     = "http://deviceboxhq.com/"
 	xcode15_4_ddi = "ddi-15F31d"

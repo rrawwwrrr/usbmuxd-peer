@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"goios-peer/imagemounterovveride"
-	"io"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
@@ -40,6 +38,14 @@ func Activate(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, GenericResponse{Message: "Activation successful"})
 }
 
+// Получить хэш загруженного образа
+// Info                godoc
+// @Summary      Получить хэш загруженного образа
+// @Tags         general_device_specific
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Param        udid path string true "UDID устройства"
+// @Router       /device/{udid}/image [get]
 func GetImages(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
 	conn, err := imagemounter.NewImageMounter(device)
@@ -60,49 +66,28 @@ func GetImages(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 
 }
+
+// Установка xСode image
+// Info                godoc
+// @Summary      Установка xСode image
+// @Tags         general_device_specific
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Param        udid path string true "UDID устройства"
+// @Router       /device/{udid}/image [post]
 func InstallImage(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
-	auto := c.Query("auto")
-	if auto == "true" {
-		basedir := c.Query("basedir")
-		if basedir == "" {
-			basedir = "./devimages"
-		}
+	basedir := c.Query("basedir")
+	if basedir == "" {
+		basedir = "./devimages"
+	}
 
-		path, err := imagemounterovveride.DownloadImageFor(device, basedir)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, err)
-			return
-		}
-		err = imagemounter.MountImage(device, path)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, err)
-			return
-		}
-		c.JSON(http.StatusOK, "ok")
-		return
-	}
-	body := c.Request.Body
-	defer body.Close()
-
-	tempfile, err := os.CreateTemp(os.TempDir(), "go-ios")
+	path, err := imagemounterovveride.DownloadImageFor(device, basedir)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
-	tempfilepath := tempfile.Name()
-	defer os.Remove(tempfilepath)
-	_, err = io.Copy(tempfile, body)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
-		return
-	}
-	err = tempfile.Close()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
-		return
-	}
-	err = imagemounter.MountImage(device, tempfilepath)
+	err = imagemounter.MountImage(device, path)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
