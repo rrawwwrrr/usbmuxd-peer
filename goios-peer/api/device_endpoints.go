@@ -102,7 +102,7 @@ func InstallImage(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
-	err = imagemounterovveride.MountImage(device, tempfilepath)
+	err = imagemounter.MountImage(device, tempfilepath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
