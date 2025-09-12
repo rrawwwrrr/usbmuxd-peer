@@ -234,9 +234,14 @@ func DeleteWdaSession(c *gin.Context) {
 }
 
 func defaultWdaConfig() WdaConfig {
+	bundleID := os.Getenv("WDA_BUNDLE_ID")
+	if bundleID == "" {
+		//bundleID = "com.facebook.WebDriverAgentRunner.xctrunner"
+		bundleID = "com.x5.WebDriverAgentRunner.xctrunner"
+	}
 	return WdaConfig{
-		BundleID:     "com.facebook.WebDriverAgentRunner.xctrunner",
-		TestbundleID: "com.facebook.WebDriverAgentRunner.xctrunner",
+		BundleID:     bundleID,
+		TestbundleID: bundleID,
 		XCTestConfig: "WebDriverAgentRunner.xctest",
 		Args:         []string{},
 		Env: map[string]interface{}{
