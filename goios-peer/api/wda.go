@@ -74,8 +74,6 @@ func (f *WdaFactory) Create(device ios.DeviceEntry, config WdaConfig) (*WdaSessi
 	go f.runSession(ctx, session, device)
 
 	f.sessions.Store(udid, session)
-	UpdateWdaStatus(udid, "created", session.SessionId, "Session created")
-
 	return &session, nil
 }
 
@@ -89,6 +87,7 @@ func (f *WdaFactory) runSession(ctx context.Context, session WdaSession, device 
 	usePortStr, _ := session.Config.Env["USE_PORT"].(string)
 	usePort, _ := strconv.ParseUint(usePortStr, 10, 16)
 	fwdWda, _ := forward.Forward(device, uint16(usePort), uint16(usePort))
+	UpdateWdaStatus(device.Properties.SerialNumber, "created", session.SessionId, "Session created")
 
 	// Запуск WDA
 	_, err := testmanagerd.RunTestWithConfig(ctx, testmanagerd.TestConfig{
