@@ -108,9 +108,12 @@ func (f *WdaFactory) runSession(ctx context.Context, session WdaSession, device 
 	session.stopWda()
 	fwdMjpeg.Close()
 	fwdWda.Close()
+	UpdateWdaStatus(device.Properties.SerialNumber, "deleted", session.SessionId, "Session deleted")
+
 	f.sessions.Delete(session.Udid)
 
-	log.WithField("udid", session.Udid).
+	log.
+		WithField("udid", session.Udid).
 		Debug("Deleted WDA session")
 }
 
