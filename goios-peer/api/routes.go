@@ -30,7 +30,7 @@ func simpleDeviceRoutes(device *gin.RouterGroup) {
 	device.POST("/activate", Activate)
 
 	device.GET("/image", GetImages)
-	device.PUT("/image", InstallImage)
+	device.POST("/image", InstallImage)
 
 	device.GET("/notifications", streamingMiddleWare, Notifications)
 
