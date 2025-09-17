@@ -2,9 +2,9 @@ name: Docker Build and Push
 
 on:
   push:
-    branches: [ "main" , "ffmpeg" ]
+    branches: [ "main" , "develop" ]
   pull_request:
-    branches: [ "main" , "ffmpeg"]
+    branches: [ "main" , "develop"]
 
 jobs:
   build-and-push:
@@ -23,6 +23,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: .infra/docker/Dockerfile2
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/usbmuxd-peer:latest
