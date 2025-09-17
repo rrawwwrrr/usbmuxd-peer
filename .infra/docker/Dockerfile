@@ -22,10 +22,12 @@ RUN apt update -o "Acquire::https::Verify-Peer=false" -y && \
 RUN apt update && apt -y install libimobiledevice-utils libimobiledevice6 usbmuxd  ffmpeg \
         && rm -rf /var/lib/apt/lists/*
 RUN rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
-COPY ../../run.sh run.sh
+
+COPY run.sh run.sh
 COPY --from=builder /app/peer /app/peer
-COPY ../../ddi-15F31d.zip /files/ddi-15F31d.zip
+COPY ddi-15F31d.zip /files/ddi-15F31d.zip
 
 RUN chmod +x /app/peer run.sh
 
