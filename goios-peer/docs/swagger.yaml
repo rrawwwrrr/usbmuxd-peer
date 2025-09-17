@@ -1,0 +1,712 @@
+definitions:
+  api.GenericResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  api.StreamRequest:
+    properties:
+      port:
+        example: 5004
+        type: integer
+      url:
+        example: 192.168.1.50
+        type: string
+    type: object
+  api.WdaConfig:
+    properties:
+      args:
+        items:
+          type: string
+        type: array
+      bundleId:
+        type: string
+      env:
+        additionalProperties: true
+        type: object
+      testBundleId:
+        type: string
+      xcTestConfig:
+        type: string
+    required:
+    - bundleId
+    - testBundleId
+    - xcTestConfig
+    type: object
+  api.WdaSession:
+    properties:
+      config:
+        $ref: '#/definitions/api.WdaConfig'
+      sessionId:
+        type: string
+      udid:
+        type: string
+    required:
+    - config
+    - sessionId
+    - udid
+    type: object
+  installationproxy.AppInfo:
+    additionalProperties: {}
+    type: object
+  instruments.Profile:
+    properties:
+      description:
+        type: string
+      identifier:
+        type: string
+      name:
+        type: string
+    type: object
+  instruments.ProfileType:
+    properties:
+      activeProfile:
+        type: string
+      identifier:
+        type: string
+      isActive:
+        type: boolean
+      isDestructive:
+        type: boolean
+      isInternal:
+        type: boolean
+      name:
+        type: string
+      profiles:
+        items:
+          $ref: '#/definitions/instruments.Profile'
+        type: array
+      profilesSorted:
+        type: boolean
+    type: object
+info:
+  contact: {}
+paths:
+  /device/{udid}/activate:
+    post:
+      description: Возвращает ошибку, если активация не удалась. В противном случае
+        {"message":"Активация успешна"}
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Активировать устройство по UDID
+      tags:
+      - general_device_specific
+  /device/{udid}/apps:
+    get:
+      description: Получить список установленных приложений на устройстве
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/installationproxy.AppInfo'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Список приложений на устройстве
+      tags:
+      - apps
+  /device/{udid}/apps/install:
+    post:
+      description: Установить приложение на устройстве, загрузив ipa-файл
+      parameters:
+      - description: ipa-файл для установки
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Установка приложения на устройстве
+      tags:
+      - apps
+  /device/{udid}/apps/kill:
+    post:
+      description: Завершить работу приложения на устройстве по указанному bundleID
+      parameters:
+      - description: идентификатор bundle целевого приложения
+        in: query
+        name: bundleID
+        required: true
+        type: string
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Завершение работы приложения на устройстве
+      tags:
+      - apps
+  /device/{udid}/apps/launch:
+    post:
+      description: Запустить приложение на устройстве по указанному bundleID
+      parameters:
+      - description: идентификатор bundle целевого приложения
+        in: query
+        name: bundleID
+        required: true
+        type: string
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Запуск приложения на устройстве
+      tags:
+      - apps
+  /device/{udid}/apps/uninstall:
+    delete:
+      description: Удалить приложение с устройства по указанному bundleID
+      parameters:
+      - description: bundleID приложения
+        in: query
+        name: bundleID
+        required: true
+        type: string
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Удаление приложения с устройства
+      tags:
+      - apps
+  /device/{udid}/conditions:
+    get:
+      description: Получить список условий, которые можно применить к устройству
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/instruments.ProfileType'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Получить список доступных условий устройства
+      tags:
+      - general_device_specific
+    post:
+      description: Отключает текущее активное условие на устройстве
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Отключить текущее активное условие на устройстве
+      tags:
+      - general_device_specific
+    put:
+      description: Включает условие на устройстве по указанным profileTypeID и profileID
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      - description: Идентификатор типа профиля, например SlowNetworkCondition
+        in: query
+        name: profileTypeID
+        required: true
+        type: string
+      - description: Идентификатор под-профиля, например SlowNetwork100PctLoss
+        in: query
+        name: profileID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Включить условие на устройстве
+      tags:
+      - general_device_specific
+  /device/{udid}/info:
+    get:
+      description: Возвращает все значения lockdown и дополнительные свойства instruments
+        для устройств с включенной разработкой.
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Получить информацию о блокировке устройства по UDID
+      tags:
+      - general_device_specific
+  /device/{udid}/pair:
+    post:
+      description: Сопряжение устройства с/без режима Supervised
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      - description: Установить, находится ли устройство в режиме Supervised - true/false
+        in: query
+        name: supervised
+        required: true
+        type: string
+      - description: Файл Supervision *.p12
+        in: formData
+        name: p12file
+        type: file
+      - description: Пароль для Supervision
+        in: formData
+        name: supervision_password
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Сопряжение устройства с/без режима Supervised
+      tags:
+      - general_device_specific
+  /device/{udid}/profiles:
+    get:
+      description: Получить список установленных профилей на iOS-устройстве
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Получить список профилей
+      tags:
+      - general_device_specific
+  /device/{udid}/resetlocation:
+    post:
+      description: Сбрасывает изменённое местоположение устройства к реальному
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Сброс изменённого местоположения устройства
+      tags:
+      - general_device_specific
+  /device/{udid}/screenshot:
+    get:
+      description: Делает скриншот в формате PNG и возвращает его.
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              format: int32
+              type: integer
+            type: array
+      summary: Получить скриншот устройства
+      tags:
+      - general_device_specific
+  /device/{udid}/screenstream:
+    get:
+      description: Возвращает MJPEG-поток скриншотов с iOS-устройства.
+      parameters:
+      - description: ID устройства
+        in: path
+        name: device_id
+        required: true
+        type: string
+      produces:
+      - multipart/x-mixed-replace
+      responses:
+        "200":
+          description: stream
+          headers:
+            Access-Control-Allow-Origin:
+              description: '*'
+              type: string
+            Cache-Control:
+              description: no-cache, private
+              type: string
+            Content-Type:
+              description: multipart/x-mixed-replace; boundary=--BoundaryString
+              type: string
+            Pragma:
+              description: no-cache
+              type: string
+          schema:
+            type: string
+      summary: MJPEG Stream
+      tags:
+      - stream
+  /device/{udid}/setlocation:
+    post:
+      description: Изменяет текущее местоположение устройства на указанные широту
+        и долготу
+      parameters:
+      - description: Широта местоположения
+        in: query
+        name: latitude
+        required: true
+        type: string
+      - description: Долгота местоположения
+        in: query
+        name: longtitude
+        required: true
+        type: string
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Изменить текущее местоположение устройства
+      tags:
+      - general_device_specific
+  /device/{udid}/stream/listen:
+    get:
+      description: Использует SSE для подключения к команде LISTEN
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Использует SSE для подключения к команде LISTEN
+      tags:
+      - general
+  /device/{udid}/stream/start:
+    post:
+      consumes:
+      - application/json
+      description: Стартует ретрансляцию MJPEG -> H264 -> RTP
+      parameters:
+      - description: Данные для запуска
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.StreamRequest'
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Stream started
+          schema:
+            type: string
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "500":
+          description: Internal error
+          schema:
+            type: string
+      summary: Запуск стрима
+      tags:
+      - stream
+  /device/{udid}/stream/status:
+    get:
+      description: Возвращает состояние стриминга
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: running|stopped
+          schema:
+            type: string
+      summary: Статус стрима
+      tags:
+      - stream
+  /device/{udid}/stream/stop:
+    post:
+      description: Останавливает текущий ffmpeg процесс
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Stream stopped
+          schema:
+            type: string
+      summary: Остановка стрима
+      tags:
+      - stream
+  /device/{udid}/wda/session:
+    delete:
+      description: Удалить активную сессию WebDriverAgent для указанного устройства
+        (по UDID)
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.WdaSession'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Удалить сессию WebDriverAgent
+      tags:
+      - WebDriverAgent
+    get:
+      description: Получить активную сессию WebDriverAgent для указанного устройства
+        (по UDID)
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.WdaSession'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Получить активную сессию WebDriverAgent
+      tags:
+      - WebDriverAgent
+    post:
+      consumes:
+      - application/json
+      description: Создать новую сессию WebDriverAgent для указанного устройства (одна
+        сессия на UDID)
+      parameters:
+      - description: Конфигурация WebDriverAgent
+        in: body
+        name: config
+        required: true
+        schema:
+          $ref: '#/definitions/api.WdaConfig'
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.WdaSession'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Создать новую сессию WDA
+      tags:
+      - WebDriverAgent
+  /notifications:
+    get:
+      description: Использует instruments для получения событий изменения состояния
+        приложений
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Использует instruments для получения событий изменения состояния приложений
+      tags:
+      - general
+swagger: "2.0"

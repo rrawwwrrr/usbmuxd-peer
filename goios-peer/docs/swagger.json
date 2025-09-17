@@ -1,0 +1,1060 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/device/{udid}/activate": {
+            "post": {
+                "description": "Возвращает ошибку, если активация не удалась. В противном случае {\"message\":\"Активация успешна\"}",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general_device_specific"
+                ],
+                "summary": "Активировать устройство по UDID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/apps": {
+            "get": {
+                "description": "Получить список установленных приложений на устройстве",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "apps"
+                ],
+                "summary": "Список приложений на устройстве",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/installationproxy.AppInfo"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/apps/install": {
+            "post": {
+                "description": "Установить приложение на устройстве, загрузив ipa-файл",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "apps"
+                ],
+                "summary": "Установка приложения на устройстве",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "ipa-файл для установки",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/apps/kill": {
+            "post": {
+                "description": "Завершить работу приложения на устройстве по указанному bundleID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "apps"
+                ],
+                "summary": "Завершение работы приложения на устройстве",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "идентификатор bundle целевого приложения",
+                        "name": "bundleID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/apps/launch": {
+            "post": {
+                "description": "Запустить приложение на устройстве по указанному bundleID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "apps"
+                ],
+                "summary": "Запуск приложения на устройстве",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "идентификатор bundle целевого приложения",
+                        "name": "bundleID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/apps/uninstall": {
+            "delete": {
+                "description": "Удалить приложение с устройства по указанному bundleID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "apps"
+                ],
+                "summary": "Удаление приложения с устройства",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bundleID приложения",
+                        "name": "bundleID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/conditions": {
+            "get": {
+                "description": "Получить список условий, которые можно применить к устройству",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general_device_specific"
+                ],
+                "summary": "Получить список доступных условий устройства",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/instruments.ProfileType"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Включает условие на устройстве по указанным profileTypeID и profileID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general_device_specific"
+                ],
+                "summary": "Включить условие на устройстве",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Идентификатор типа профиля, например SlowNetworkCondition",
+                        "name": "profileTypeID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Идентификатор под-профиля, например SlowNetwork100PctLoss",
+                        "name": "profileID",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Отключает текущее активное условие на устройстве",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general_device_specific"
+                ],
+                "summary": "Отключить текущее активное условие на устройстве",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/info": {
+            "get": {
+                "description": "Возвращает все значения lockdown и дополнительные свойства instruments для устройств с включенной разработкой.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general_device_specific"
+                ],
+                "summary": "Получить информацию о блокировке устройства по UDID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/pair": {
+            "post": {
+                "description": "Сопряжение устройства с/без режима Supervised",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general_device_specific"
+                ],
+                "summary": "Сопряжение устройства с/без режима Supervised",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Установить, находится ли устройство в режиме Supervised - true/false",
+                        "name": "supervised",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Файл Supervision *.p12",
+                        "name": "p12file",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Пароль для Supervision",
+                        "name": "supervision_password",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/profiles": {
+            "get": {
+                "description": "Получить список установленных профилей на iOS-устройстве",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general_device_specific"
+                ],
+                "summary": "Получить список профилей",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/resetlocation": {
+            "post": {
+                "description": "Сбрасывает изменённое местоположение устройства к реальному",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general_device_specific"
+                ],
+                "summary": "Сброс изменённого местоположения устройства",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/screenshot": {
+            "get": {
+                "description": "Делает скриншот в формате PNG и возвращает его.",
+                "produces": [
+                    "image/png"
+                ],
+                "tags": [
+                    "general_device_specific"
+                ],
+                "summary": "Получить скриншот устройства",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer",
+                                "format": "int32"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/screenstream": {
+            "get": {
+                "description": "Возвращает MJPEG-поток скриншотов с iOS-устройства.",
+                "produces": [
+                    "multipart/x-mixed-replace"
+                ],
+                "tags": [
+                    "stream"
+                ],
+                "summary": "MJPEG Stream",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID устройства",
+                        "name": "device_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "stream",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "headers": {
+                            "Access-Control-Allow-Origin": {
+                                "type": "string",
+                                "description": "*"
+                            },
+                            "Cache-Control": {
+                                "type": "string",
+                                "description": "no-cache, private"
+                            },
+                            "Content-Type": {
+                                "type": "string",
+                                "description": "multipart/x-mixed-replace; boundary=--BoundaryString"
+                            },
+                            "Pragma": {
+                                "type": "string",
+                                "description": "no-cache"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/setlocation": {
+            "post": {
+                "description": "Изменяет текущее местоположение устройства на указанные широту и долготу",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general_device_specific"
+                ],
+                "summary": "Изменить текущее местоположение устройства",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Широта местоположения",
+                        "name": "latitude",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Долгота местоположения",
+                        "name": "longtitude",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/stream/listen": {
+            "get": {
+                "description": "Использует SSE для подключения к команде LISTEN",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general"
+                ],
+                "summary": "Использует SSE для подключения к команде LISTEN",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/stream/start": {
+            "post": {
+                "description": "Стартует ретрансляцию MJPEG -\u003e H264 -\u003e RTP",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "stream"
+                ],
+                "summary": "Запуск стрима",
+                "parameters": [
+                    {
+                        "description": "Данные для запуска",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.StreamRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Stream started",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/stream/status": {
+            "get": {
+                "description": "Возвращает состояние стриминга",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "stream"
+                ],
+                "summary": "Статус стрима",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "running|stopped",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/stream/stop": {
+            "post": {
+                "description": "Останавливает текущий ffmpeg процесс",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "stream"
+                ],
+                "summary": "Остановка стрима",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Stream stopped",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/wda/session": {
+            "get": {
+                "description": "Получить активную сессию WebDriverAgent для указанного устройства (по UDID)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebDriverAgent"
+                ],
+                "summary": "Получить активную сессию WebDriverAgent",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.WdaSession"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создать новую сессию WebDriverAgent для указанного устройства (одна сессия на UDID)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebDriverAgent"
+                ],
+                "summary": "Создать новую сессию WDA",
+                "parameters": [
+                    {
+                        "description": "Конфигурация WebDriverAgent",
+                        "name": "config",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.WdaConfig"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.WdaSession"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Удалить активную сессию WebDriverAgent для указанного устройства (по UDID)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "WebDriverAgent"
+                ],
+                "summary": "Удалить сессию WebDriverAgent",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.WdaSession"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications": {
+            "get": {
+                "description": "Использует instruments для получения событий изменения состояния приложений",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general"
+                ],
+                "summary": "Использует instruments для получения событий изменения состояния приложений",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "api.GenericResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.StreamRequest": {
+            "type": "object",
+            "properties": {
+                "port": {
+                    "type": "integer",
+                    "example": 5004
+                },
+                "url": {
+                    "type": "string",
+                    "example": "192.168.1.50"
+                }
+            }
+        },
+        "api.WdaConfig": {
+            "type": "object",
+            "required": [
+                "bundleId",
+                "testBundleId",
+                "xcTestConfig"
+            ],
+            "properties": {
+                "args": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "bundleId": {
+                    "type": "string"
+                },
+                "env": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "testBundleId": {
+                    "type": "string"
+                },
+                "xcTestConfig": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.WdaSession": {
+            "type": "object",
+            "required": [
+                "config",
+                "sessionId",
+                "udid"
+            ],
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/api.WdaConfig"
+                },
+                "sessionId": {
+                    "type": "string"
+                },
+                "udid": {
+                    "type": "string"
+                }
+            }
+        },
+        "installationproxy.AppInfo": {
+            "type": "object",
+            "additionalProperties": {}
+        },
+        "instruments.Profile": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "identifier": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "instruments.ProfileType": {
+            "type": "object",
+            "properties": {
+                "activeProfile": {
+                    "type": "string"
+                },
+                "identifier": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "isDestructive": {
+                    "type": "boolean"
+                },
+                "isInternal": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "profiles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/instruments.Profile"
+                    }
+                },
+                "profilesSorted": {
+                    "type": "boolean"
+                }
+            }
+        }
+    }
+}
