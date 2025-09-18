@@ -77,7 +77,7 @@ func streamRoutes(group *gin.RouterGroup) {
 	router := group.Group("/stream")
 	router.Use(LimitNumClientsUDID())
 	router.POST("/start", StartStream)
-	router.POST("/start", StartStream2)
+	router.POST("/startparam", StartStream2)
 
 	router.DELETE("/stop", StopStream)
 	router.GET("/status", StatusStream)
