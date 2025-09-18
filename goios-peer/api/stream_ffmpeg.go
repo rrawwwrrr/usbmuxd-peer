@@ -31,68 +31,37 @@ func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 	mjpegURL := fmt.Sprintf("http://%s:%d", mjpegHost, mjpegPort)
 
 	args := []string{
-		// --- Основные настройки потока ---
+		// --- Настройки ВХОДНОГО потока (перед -i) ---
 		"-reconnect", "1",
 		"-reconnect_streamed", "1",
 		"-reconnect_delay_max", "5",
 		"-reconnect_at_eof", "1",
-		"-i", mjpegURL,
-		"-v", "verbose", // подробные логи в файл
-		"-re", "-stream_loop", "-1",
 		"-fflags", "+genpts",
 		"-r", "25",
-		"-an",
+		"-re",                // читать вход в реальном времени (не ускоряя)
+		"-stream_loop", "-1", // бесконечный цикл (если MJPEG кончится — перезапустить)
+
+		// --- Вход ---
+		"-i", mjpegURL,
+
+		// --- Настройки ВЫХОДНОГО потока (после -i) ---
+		"-v", "verbose", // подробные логи (можно убрать потом)
+		"-an", // без аудио
 		"-c:v", "libx264",
 		"-preset", "veryfast",
 		"-tune", "zerolatency",
 		"-pix_fmt", "yuv420p",
 		"-profile:v", "baseline",
 		"-level", "3.1",
-		"-g", "25", "-keyint_min", "25", "-sc_threshold", "0",
-		"-b:v", "1500k", "-maxrate", "1500k", "-bufsize", "1500k",
+		"-g", "25",
+		"-keyint_min", "25",
+		"-sc_threshold", "0",
+		"-b:v", "1500k",
+		"-maxrate", "1500k",
+		"-bufsize", "1500k",
 		"-x264-params", "nal-hrd=cbr:repeat-headers=1",
-		"-f", "rtp", "-payload_type", "96",
-		//// --- Ключевые флаги для низкой задержки и дропа кадров ---
-		//"-fflags", "+genpts+discardcorrupt+nobuffer+flush_packets",
-		//"-flags", "low_delay",
-		//"-strict", "experimental", // если используешь experimental кодеки
-		//
-		//// Уменьшаем размеры буферов
-		//"-rtbufsize", "64k", // маленький буфер ввода
-		//"-probesize", "32", // быстрее стартует
-		//
-		//"-r", "25",
-		//"-i", mjpegURL,
-		//
-		//// --- Видеофильтр (время) ---
-		//"-an", // без аудио
-		//
-		//// --- Кодирование: максимум скорости, минимум буфера ---
-		//"-c:v", "libx264",
-		//"-preset", "ultrafast", // вместо veryfast — ещё быстрее
-		//"-tune", "zerolatency", // критично для low-latency
-		//"-pix_fmt", "yuv420p",
-		//"-profile:v", "baseline", // лучше для совместимости
-		//"-level", "3.1",
-		//
-		//// Битрейт (можно снизить, если сеть слабая)
-		//"-b:v", "1000k",
-		//"-maxrate", "1000k",
-		//"-bufsize", "500k", // маленький буфер декодера
-		//
-		//// Ключевые кадры каждые 2 секунды (~50 при 25fps), но не реже чем нужно
-		//"-g", "25",
-		//"-keyint_min", "25",
-		//"-sc_threshold", "0", // всегда делай I-кадры по расписанию
-		//"-forced-idr", "1",
-		//
-		//// Отключаем сложные оптимизации, которые замедляют
-		//"-x264-params", "nal-hrd=cbr:repeat-headers=1:no-mbtree=1:vbv-maxrate=1000:vbv-bufsize=500:sliced-threads=1:sync-lookahead=0",
-		//
-		//// --- Самое важное: форсировать немедленную отправку пакетов ---
-		//"-f", "rtp",
-		//"-payload_type", "96",
-		//"-flush_packets", "1", // ! Очень важно: пакеты отправляются немедленно
+		"-f", "rtp",
+		"-payload_type", "96",
 		fmt.Sprintf("rtp://%s:%d?pkt_size=1200", host, port),
 	}
 
