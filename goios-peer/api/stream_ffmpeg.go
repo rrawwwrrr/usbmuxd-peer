@@ -41,6 +41,7 @@ func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 		"-probesize", "32",
 		"-r", "25",
 		"-i", mjpegURL,
+		"-vf", `drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='%{localtime\:%H\\\\\\:%M\\\\\\:%S}':x=10:y=10:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.5`,
 		"-an",
 		"-c:v", "libx264",
 		"-preset", "veryfast",
