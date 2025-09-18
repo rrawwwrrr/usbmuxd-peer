@@ -36,32 +36,13 @@ func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 		"-reconnect_streamed", "1",
 		"-reconnect_delay_max", "5",
 		"-reconnect_at_eof", "1",
+		"-v", "verbose",
+		"-re", "-stream_loop", "-1",
 		"-fflags", "+genpts",
 		"-r", "25",
-		"-re",                // читать вход в реальном времени (не ускоряя)
-		"-stream_loop", "-1", // бесконечный цикл (если MJPEG кончится — перезапустить)
-
-		// --- Вход ---
 		"-i", mjpegURL,
-
-		// --- Настройки ВЫХОДНОГО потока (после -i) ---
-		"-v", "verbose", // подробные логи (можно убрать потом)
-		"-an", // без аудио
-		"-c:v", "libx264",
-		"-preset", "veryfast",
-		"-tune", "zerolatency",
-		"-pix_fmt", "yuv420p",
-		"-profile:v", "baseline",
-		"-level", "3.1",
-		"-g", "25",
-		"-keyint_min", "25",
-		"-sc_threshold", "0",
-		"-b:v", "1500k",
-		"-maxrate", "1500k",
-		"-bufsize", "1500k",
-		"-x264-params", "nal-hrd=cbr:repeat-headers=1",
-		"-f", "rtp",
-		"-payload_type", "96",
+		"-c:v", "copy",
+		"-f", "rtp", "-payload_type", "96",
 		fmt.Sprintf("rtp://%s:%d?pkt_size=1200", host, port),
 	}
 
