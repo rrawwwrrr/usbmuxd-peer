@@ -12,7 +12,7 @@ func main() {
 	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
 	log.SetFormatter(customFormatter)
 	customFormatter.FullTimestamp = true
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.InfoLevel)
 	//goios.Start()
 	go socket.Start()
 	go api.HandleMessages()
