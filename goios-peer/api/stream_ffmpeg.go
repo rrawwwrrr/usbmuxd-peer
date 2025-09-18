@@ -31,30 +31,56 @@ func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 	mjpegURL := fmt.Sprintf("http://%s:%d", mjpegHost, mjpegPort)
 
 	args := []string{
+		// --- Основные настройки потока ---
 		"-reconnect", "1",
 		"-reconnect_streamed", "1",
 		"-reconnect_delay_max", "5",
 		"-reconnect_at_eof", "1",
-		"-fflags", "+genpts+discardcorrupt+nobuffer",
+
+		// --- Ключевые флаги для низкой задержки и дропа кадров ---
+		"-fflags", "+genpts+discardcorrupt+nobuffer+flush_packets",
 		"-flags", "low_delay",
-		"-rtbufsize", "512k",
-		"-probesize", "32",
+		"-strict", "experimental", // если используешь experimental кодеки
+
+		// Уменьшаем размеры буферов
+		"-rtbufsize", "64k", // маленький буфер ввода
+		"-probesize", "32", // быстрее стартует
+
 		"-r", "25",
 		"-i", mjpegURL,
-		"-vf", `drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='%{localtime\:%H\\\\\\:%M\\\\\\:%S}':x=10:y=10:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.5`,
-		"-an",
+
+		// --- Видеофильтр (время) ---
+		"-vf", `drawtext=text='%{localtime\\:%H\\\\:%M\\\\:%S}':x=10:y=H-th-10:fontsize=24:fontcolor=yellow:box=1:boxcolor=black@0.5`,
+
+		"-an", // без аудио
+
+		// --- Кодирование: максимум скорости, минимум буфера ---
 		"-c:v", "libx264",
-		"-preset", "veryfast",
-		"-tune", "zerolatency",
+		"-preset", "ultrafast", // вместо veryfast — ещё быстрее
+		"-tune", "zerolatency", // критично для low-latency
 		"-pix_fmt", "yuv420p",
-		"-profile:v", "baseline",
+		"-profile:v", "baseline", // лучше для совместимости
 		"-level", "3.1",
-		"-crf", "22",
-		"-g", "25", "-keyint_min", "25", "-sc_threshold", "0",
-		"-b:v", "1500k", "-maxrate", "2500k", "-bufsize", "1500k",
-		"-x264-params", "nal-hrd=cbr:repeat-headers=1:no-mbtree=1:sliced-threads=1:sync-lookahead=0",
-		"-f", "rtp", "-payload_type", "96",
-		fmt.Sprintf("rtp://%s:%d?pkt_size=1200", host, port),
+
+		// Битрейт (можно снизить, если сеть слабая)
+		"-b:v", "1000k",
+		"-maxrate", "1000k",
+		"-bufsize", "500k", // маленький буфер декодера
+
+		// Ключевые кадры каждые 2 секунды (~50 при 25fps), но не реже чем нужно
+		"-g", "50",
+		"-keyint_min", "50",
+		"-sc_threshold", "0", // всегда делай I-кадры по расписанию
+		"-forced-idr", "1",
+
+		// Отключаем сложные оптимизации, которые замедляют
+		"-x264-params", "nal-hrd=cbr:repeat-headers=1:no-mbtree=1:vbv-maxrate=1000:vbv-bufsize=500:sliced-threads=1:sync-lookahead=0",
+
+		// --- Самое важное: форсировать немедленную отправку пакетов ---
+		"-f", "rtp",
+		"-payload_type", "96",
+		"-flush_packets", "1", // ! Очень важно: пакеты отправляются немедленно
+		fmt.Sprintf("rtp://%s:%d?pkt_size=1200&timeout=1000000", host, port),
 	}
 
 	c := exec.Command("ffmpeg", args...)
