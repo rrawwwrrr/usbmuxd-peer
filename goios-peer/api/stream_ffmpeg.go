@@ -50,8 +50,6 @@ func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 		"-i", mjpegURL,
 
 		// --- Видеофильтр (время) ---
-		"-vf", `drawtext=text='%{localtime\\:%H\\\\:%M\\\\:%S}':x=10:y=H-th-10:fontsize=24:fontcolor=yellow:box=1:boxcolor=black@0.5`,
-
 		"-an", // без аудио
 
 		// --- Кодирование: максимум скорости, минимум буфера ---
@@ -80,7 +78,7 @@ func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 		"-f", "rtp",
 		"-payload_type", "96",
 		"-flush_packets", "1", // ! Очень важно: пакеты отправляются немедленно
-		fmt.Sprintf("rtp://%s:%d?pkt_size=1200&timeout=1000000", host, port),
+		fmt.Sprintf("rtp://%s:%d?pkt_size=1200", host, port),
 	}
 
 	c := exec.Command("ffmpeg", args...)
