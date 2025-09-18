@@ -14,10 +14,44 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type StreamConfig struct {
+	VideoCodec   string `json:"video_codec"` // например, "libx264"
+	Preset       string `json:"preset"`      // "veryfast", "ultrafast"...
+	Tune         string `json:"tune"`        // "zerolatency"
+	PixFmt       string `json:"pix_fmt"`     // "yuv420p"
+	Profile      string `json:"profile"`     // "baseline"
+	Level        string `json:"level"`       // "3.1"
+	GopSize      *int   `json:"gop_size"`    // int pointer — может быть nil
+	KeyintMin    *int   `json:"keyint_min"`
+	SCRThreshold *int   `json:"sc_threshold"` // например, 0
+	Bitrate      string `json:"bitrate"`      // "1500k"
+	MaxRate      string `json:"maxrate"`      // может быть пустым
+	BufSize      string `json:"bufsize"`      // может быть пустым
+	X264Params   string `json:"x264_params"`  // дополнительные параметры
+	PayloadType  *int   `json:"payload_type"` // например, 96
+	FMT          string `json:"format"`       // "rtp"
+	PacketSize   *int   `json:"pkt_size"`     // для RTP
+}
+
 // StreamRequest структура запроса для старта стрима
 type StreamRequest struct {
 	URL  string `json:"url" example:"192.168.1.50"`
 	Port int    `json:"port" example:"5004"`
+
+	Preset      string `json:"preset"`
+	Bitrate     string `json:"bitrate"`
+	MaxRate     string `json:"maxrate"`
+	BufSize     string `json:"bufsize"`
+	GopSize     *int   `json:"gop_size"` // указатель — может быть null
+	KeyintMin   *int   `json:"keyint_min"`
+	Level       string `json:"level"`
+	Profile     string `json:"profile"`
+	PixFmt      string `json:"pix_fmt"`
+	Tune        string `json:"tune"`
+	X264Params  string `json:"x264_params"`
+	PayloadType *int   `json:"payload_type"`
+	PacketSize  *int   `json:"pkt_size"`
+	OverlayTime bool   `json:"overlay_time"`
 }
 
 var (
@@ -29,20 +63,43 @@ var (
 func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 
 	mjpegURL := fmt.Sprintf("http://%s:%d", mjpegHost, mjpegPort)
-
+	g := "30"
+	bitrate := "2500k"
 	args := []string{
 		// --- Настройки ВХОДНОГО потока (перед -i) ---
+		"-rw_timeout", "2000000", // 2s: если вход завис — быстро отвалиться
 		"-reconnect", "1",
 		"-reconnect_streamed", "1",
-		"-reconnect_delay_max", "5",
-		"-reconnect_at_eof", "1",
-		"-v", "verbose",
-		"-re", "-stream_loop", "-1",
-		"-fflags", "+genpts",
-		"-r", "25",
-		"-i", mjpegURL,
-		"-c:v", "copy",
-		"-f", "rtp", "-payload_type", "96",
+		"-reconnect_on_network_error", "1",
+
+		"-fflags", "nobuffer",
+		"-flags", "low_delay",
+		"-probesize", "32",
+		"-analyzeduration", "0",
+		"-use_wallclock_as_timestamps", "1",
+		"-thread_queue_size", "512",
+
+		"-i", mjpegURL, // источник
+
+		// --- ВЫХОД: видео только, стабильный CBR, низкая задержка ---
+		"-an",
+		"-r", g, // целевой FPS (напр. 30)
+
+		"-c:v", "libx264",
+		"-preset", "veryfast",
+		"-tune", "zerolatency",
+		"-pix_fmt", "yuv420p",
+		"-profile:v", "baseline",
+		"-level", "3.1",
+
+		"-g", g, "-keyint_min", g, "-sc_threshold", "0", // GOP=1s
+		"-b:v", bitrate, "-maxrate", bitrate, "-bufsize", bitrate, // CBR (напр. "2500k")
+		"-x264-params", "nal-hrd=cbr:repeat-headers=1:sliced-threads=1:sync-lookahead=0",
+		"-force_key_frames", "expr:gte(t,n_forced*1)", // IDR каждые 1s => быстро отлипает после потерь
+
+		// --- RTP: маленькие пакеты и фиксированный SSRC (анти-фриз) ---
+		"-f", "rtp",
+		"-payload_type", "96",
 		fmt.Sprintf("rtp://%s:%d?pkt_size=1200", host, port),
 	}
 
