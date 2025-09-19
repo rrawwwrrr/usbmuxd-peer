@@ -63,8 +63,6 @@ var (
 func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 
 	mjpegURL := fmt.Sprintf("http://%s:%d", mjpegHost, mjpegPort)
-	g := "30"
-	bitrate := "2500k"
 	args := []string{
 		// --- Настройки ВХОДНОГО потока (перед -i) ---
 		"-rw_timeout", "2000000", // 2s: если вход завис — быстро отвалиться
@@ -72,34 +70,27 @@ func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 		"-reconnect_streamed", "1",
 		"-reconnect_on_network_error", "1",
 
-		"-fflags", "nobuffer",
-		"-flags", "low_delay",
-		"-probesize", "32",
-		"-analyzeduration", "0",
-		"-use_wallclock_as_timestamps", "1",
-		"-thread_queue_size", "512",
+		"-v", "verbose",
+		"-re", "-stream_loop", "-1",
+		"-fflags", "+genpts",
+		"-r", "25",
 
 		"-i", mjpegURL, // источник
 
 		// --- ВЫХОД: видео только, стабильный CBR, низкая задержка ---
 		"-an",
-		"-r", g, // целевой FPS (напр. 30)
-
 		"-c:v", "libx264",
-		"-preset", "veryfast",
+		"-preset", "ultrafast",
 		"-tune", "zerolatency",
 		"-pix_fmt", "yuv420p",
 		"-profile:v", "baseline",
 		"-level", "3.1",
-
-		"-g", g, "-keyint_min", g, "-sc_threshold", "0", // GOP=1s
-		"-b:v", bitrate, "-maxrate", bitrate, "-bufsize", bitrate, // CBR (напр. "2500k")
-		"-x264-params", "nal-hrd=cbr:repeat-headers=1:sliced-threads=1:sync-lookahead=0",
-		"-force_key_frames", "expr:gte(t,n_forced*1)", // IDR каждые 1s => быстро отлипает после потерь
-
-		// --- RTP: маленькие пакеты и фиксированный SSRC (анти-фриз) ---
-		"-f", "rtp",
-		"-payload_type", "96",
+		"-g", "25", "-keyint_min", "25", "-sc_threshold", "0",
+		"-b:v", "1500k", "-maxrate", "1500k", "-bufsize", "1500k",
+		"-fflags", "nobuffer",
+		"-flags", "low_delay",
+		"-x264-params", "bframes=0:bpyramid=0:nal-hrd=cbr:repeat-headers=1:threads=4:sync-lookahead=0:rc-lookahead=0",
+		"-f", "rtp", "-payload_type", "96",
 		fmt.Sprintf("rtp://%s:%d?pkt_size=1200", host, port),
 	}
 
