@@ -91,7 +91,8 @@ func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 		"-flags", "low_delay",
 		"-x264-params", "bframes=0:bpyramid=0:nal-hrd=cbr:repeat-headers=1:threads=4:sync-lookahead=0:rc-lookahead=0",
 		"-f", "rtp", "-payload_type", "96",
-		fmt.Sprintf("rtp://%s:%d?pkt_size=1200", host, port),
+		"-ssrc", string(rune(port)),
+		fmt.Sprintf("rtp://%s:%d?pkt_size=1200", host, 40000),
 	}
 
 	c := exec.Command("ffmpeg", args...)
