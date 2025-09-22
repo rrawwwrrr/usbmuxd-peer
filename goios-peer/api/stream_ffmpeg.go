@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -84,14 +85,14 @@ func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 		"-tune", "zerolatency",
 		"-pix_fmt", "yuv420p",
 		"-profile:v", "baseline",
-		"-level", "3.1",
+		"-level", "4.0",
 		"-g", "25", "-keyint_min", "25", "-sc_threshold", "0",
 		"-b:v", "1500k", "-maxrate", "1500k", "-bufsize", "1500k",
 		"-fflags", "nobuffer",
 		"-flags", "low_delay",
 		//"-x264-params", "bframes=0:bpyramid=0:nal-hrd=cbr:repeat-headers=1:threads=4:sync-lookahead=0:rc-lookahead=0",
 		"-f", "rtp", "-payload_type", "96",
-		"-ssrc", string(rune(port)),
+		"-ssrc", strconv.Itoa(port),
 		fmt.Sprintf("rtp://%s:%d?pkt_size=1200", host, 4000),
 	}
 
