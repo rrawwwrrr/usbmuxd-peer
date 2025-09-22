@@ -64,6 +64,7 @@ var (
 func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 
 	mjpegURL := fmt.Sprintf("http://%s:%d", mjpegHost, mjpegPort)
+	log.WithField("ssrc", strconv.Itoa(port)).Info("Start stream")
 	args := []string{
 		// --- Настройки ВХОДНОГО потока (перед -i) ---
 		"-rw_timeout", "2000000", // 2s: если вход завис — быстро отвалиться
