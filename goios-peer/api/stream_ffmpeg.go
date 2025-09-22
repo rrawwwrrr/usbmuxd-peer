@@ -89,7 +89,7 @@ func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 		"-b:v", "1500k", "-maxrate", "1500k", "-bufsize", "1500k",
 		"-fflags", "nobuffer",
 		"-flags", "low_delay",
-		"-x264-params", "bframes=0:bpyramid=0:nal-hrd=cbr:repeat-headers=1:threads=4:sync-lookahead=0:rc-lookahead=0",
+		//"-x264-params", "bframes=0:bpyramid=0:nal-hrd=cbr:repeat-headers=1:threads=4:sync-lookahead=0:rc-lookahead=0",
 		"-f", "rtp", "-payload_type", "96",
 		"-ssrc", string(rune(port)),
 		fmt.Sprintf("rtp://%s:%d?pkt_size=1200", host, 4000),
