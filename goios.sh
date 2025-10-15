@@ -2,6 +2,7 @@
 # sysctl -w net.ipv6.conf.default.disable_ipv6=0
 mkdir -p /var/logs/
 export ENABLE_GO_IOS_AGENT=user
+export USBMUXD_DEFAULT_DEVICE_MODE=3
 usbmuxd&
 echo "Грузим образ xcode"
 /goios image auto >> /var/logs/image 2>&1
