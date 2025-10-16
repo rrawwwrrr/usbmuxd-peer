@@ -8,12 +8,12 @@ COPY goios-peer .
 RUN go build -o peer
 
 
-FROM docker-registry.x5.ru/debian:bullseye-slim
+FROM docker-registry.x5.ru/debian:bookworm-slim
 
 RUN rm -rf /etc/apt/sources.list && \
-  echo "deb https://art.x5.ru/artifactory/deb-debian-remote bullseye main" >> /etc/apt/sources.list && \
-  echo "deb https://art.x5.ru/artifactory/deb-debian-remote bullseye-updates main" >> /etc/apt/sources.list && \
-  echo "deb https://art.x5.ru/artifactory/deb-debian-security-remote bullseye-security main" >> /etc/apt/sources.list \
+  echo "deb https://art.x5.ru/artifactory/deb-debian-remote bookworm main" >> /etc/apt/sources.list && \
+  echo "deb https://art.x5.ru/artifactory/deb-debian-remote bookworm-updates main" >> /etc/apt/sources.list && \
+  echo "deb https://art.x5.ru/artifactory/deb-debian-security-remote bookworm-security main" >> /etc/apt/sources.list \
 
 COPY --from=docker-base-images-prod.x5.ru/x5-certs:latest /x5/certs/* /usr/local/share/ca-certificates/
 
