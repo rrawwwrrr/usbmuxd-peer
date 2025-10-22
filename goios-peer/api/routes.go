@@ -28,6 +28,7 @@ func downLoadRoutes(router *gin.Engine) {
 
 func simpleDeviceRoutes(device *gin.RouterGroup) {
 	device.POST("/activate", Activate)
+	device.POST("/reboot", Reboot)
 
 	device.GET("/image", GetImages)
 	device.POST("/image", InstallImage)
