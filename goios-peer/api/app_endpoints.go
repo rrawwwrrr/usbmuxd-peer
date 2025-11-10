@@ -1,6 +1,9 @@
 package api
 
 import (
+	"bytes"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -13,6 +16,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
+
+type InstallAppRequest struct {
+	URL string `json:"url" binding:"required,url"`
+}
 
 // Список приложений на устройстве
 // @Summary      Список приложений на устройстве
@@ -149,32 +156,48 @@ func KillApp(c *gin.Context) {
 
 // Установка приложения на устройстве
 // @Summary      Установка приложения на устройстве
-// @Description  Установить приложение на устройстве, загрузив ipa-файл
+// @Description  Установить приложение на устройстве, загрузив ipa-файл напрямую или по ссылке
 // @Tags         apps
 // @Produce      json
-// @Param        file formData file true "ipa-файл для установки"
-// @Param        udid path string true "UDID устройства"
+// @Param        file formData file false "ipa-файл для установки"
+// @Param        url  body    InstallAppRequest false "URL для скачивания ipa-файла"
+// @Param        udid path    string true "UDID устройства"
 // @Success      200 {object} GenericResponse
+// @Failure      400 {object} GenericResponse
+// @Failure      413 {object} GenericResponse
 // @Failure      500 {object} GenericResponse
 // @Router       /device/{udid}/apps/install [post]
 func InstallApp(c *gin.Context) {
 	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
-	file, err := c.FormFile("file")
 
-	log.Printf("Received file: %s", file.Filename)
+	var dst string
+	var cleanup func() // отложенная очистка временного файла
+	defer func() {
+		if cleanup != nil {
+			cleanup()
+		}
+	}()
 
-	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, GenericResponse{Error: "file form-data is missing"})
-		return
+	// Определяем, передан ли файл через multipart/form-data
+	_, fileHeader, _ := c.Request.FormFile("file")
+	hasFile := fileHeader != nil
+
+	// Определяем, передано ли тело как JSON с URL
+	var jsonReq InstallAppRequest
+	hasJSON := false
+	if c.GetHeader("Content-Type") == "application/json" {
+		if err := c.ShouldBindJSON(&jsonReq); err == nil && jsonReq.URL != "" {
+			hasJSON = true
+		}
 	}
 
-	if file.Size == 0 { // 100 MB limit
-		c.JSON(http.StatusRequestEntityTooLarge, GenericResponse{Error: "uploaded file is empty"})
+	// Валидация: должен быть либо файл, либо URL — но не оба и не ни один
+	if hasFile && hasJSON {
+		c.JSON(http.StatusBadRequest, GenericResponse{Error: "provide either 'file' or 'url', not both"})
 		return
 	}
-
-	if file.Size > 200*1024*1024 { // 100 MB limit
-		c.JSON(http.StatusRequestEntityTooLarge, GenericResponse{Error: "file size exceeds the 200MB limit"})
+	if !hasFile && !hasJSON {
+		c.JSON(http.StatusBadRequest, GenericResponse{Error: "either 'file' (formData) or 'url' (JSON) is required"})
 		return
 	}
 
@@ -183,24 +206,84 @@ func InstallApp(c *gin.Context) {
 		appDownloadFolder = os.TempDir()
 	}
 
-	dst := path.Join(appDownloadFolder, uuid.New().String()+".ipa")
-	defer func() {
-		if err := os.Remove(dst); err != nil {
-			c.JSON(http.StatusInternalServerError, GenericResponse{Error: "failed to delete temporary file"})
+	if hasFile {
+		file, err := c.FormFile("file")
+		if err != nil {
+			c.JSON(http.StatusBadRequest, GenericResponse{Error: "file form-data is missing"})
+			return
 		}
-	}()
 
-	c.SaveUploadedFile(file, dst)
+		if file.Size == 0 {
+			c.JSON(http.StatusBadRequest, GenericResponse{Error: "uploaded file is empty"})
+			return
+		}
+		if file.Size > 200*1024*1024 {
+			c.JSON(http.StatusRequestEntityTooLarge, GenericResponse{Error: "file size exceeds the 200MB limit"})
+			return
+		}
 
+		dst = path.Join(appDownloadFolder, uuid.New().String()+".ipa")
+		if err := c.SaveUploadedFile(file, dst); err != nil {
+			c.JSON(http.StatusInternalServerError, GenericResponse{Error: "failed to save uploaded file"})
+			return
+		}
+
+		cleanup = func() {
+			if err := os.Remove(dst); err != nil {
+				log.Printf("Warning: failed to remove temp file %s: %v", dst, err)
+			}
+		}
+
+	} else if hasJSON {
+		// Скачиваем файл по URL
+		resp, err := http.Get(jsonReq.URL)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, GenericResponse{Error: "failed to fetch file from URL: " + err.Error()})
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			c.JSON(http.StatusBadRequest, GenericResponse{Error: fmt.Sprintf("failed to download file: HTTP %d", resp.StatusCode)})
+			return
+		}
+
+		// Ограничиваем размер — читаем с лимитом
+		limitReader := io.LimitReader(resp.Body, 200*1024*1024+1) // +1 для детекции превышения
+		var buf bytes.Buffer
+		n, err := buf.ReadFrom(limitReader)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, GenericResponse{Error: "error reading downloaded file"})
+			return
+		}
+
+		if n > 200*1024*1024 {
+			c.JSON(http.StatusRequestEntityTooLarge, GenericResponse{Error: "downloaded file exceeds the 200MB limit"})
+			return
+		}
+
+		dst = path.Join(appDownloadFolder, uuid.New().String()+".ipa")
+		if err := os.WriteFile(dst, buf.Bytes(), 0644); err != nil {
+			c.JSON(http.StatusInternalServerError, GenericResponse{Error: "failed to save downloaded file"})
+			return
+		}
+
+		cleanup = func() {
+			if err := os.Remove(dst); err != nil {
+				log.Printf("Warning: failed to remove temp file %s: %v", dst, err)
+			}
+		}
+	}
+
+	// Установка приложения через ZipConduit
 	conn, err := zipconduit.New(device)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, GenericResponse{Error: "Unable to setup ZipConduit connection"})
 		return
 	}
 
-	err = conn.SendFile(dst)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, GenericResponse{Error: "Unable to install uploaded app"})
+	if err := conn.SendFile(dst); err != nil {
+		c.JSON(http.StatusInternalServerError, GenericResponse{Error: "Unable to install uploaded app: " + err.Error()})
 		return
 	}
 
