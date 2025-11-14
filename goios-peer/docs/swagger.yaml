@@ -6,13 +6,49 @@ definitions:
       message:
         type: string
     type: object
+  api.InstallAppRequest:
+    properties:
+      url:
+        type: string
+    required:
+    - url
+    type: object
   api.StreamRequest:
     properties:
+      bitrate:
+        type: string
+      bufsize:
+        type: string
+      gop_size:
+        description: указатель — может быть null
+        type: integer
+      keyint_min:
+        type: integer
+      level:
+        type: string
+      maxrate:
+        type: string
+      overlay_time:
+        type: boolean
+      payload_type:
+        type: integer
+      pix_fmt:
+        type: string
+      pkt_size:
+        type: integer
       port:
         example: 5004
         type: integer
+      preset:
+        type: string
+      profile:
+        type: string
+      tune:
+        type: string
       url:
         example: 192.168.1.50
+        type: string
+      x264_params:
         type: string
     type: object
   api.WdaConfig:
@@ -132,13 +168,18 @@ paths:
       - apps
   /device/{udid}/apps/install:
     post:
-      description: Установить приложение на устройстве, загрузив ipa-файл
+      description: Установить приложение на устройстве, загрузив ipa-файл напрямую
+        или по ссылке
       parameters:
       - description: ipa-файл для установки
         in: formData
         name: file
-        required: true
         type: file
+      - description: URL для скачивания ipa-файла
+        in: body
+        name: url
+        schema:
+          $ref: '#/definitions/api.InstallAppRequest'
       - description: UDID устройства
         in: path
         name: udid
@@ -149,6 +190,14 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+        "413":
+          description: Request Entity Too Large
           schema:
             $ref: '#/definitions/api.GenericResponse'
         "500":
@@ -321,6 +370,43 @@ paths:
       summary: Включить условие на устройстве
       tags:
       - general_device_specific
+  /device/{udid}/image:
+    get:
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Получить хэш загруженного образа
+      tags:
+      - general_device_specific
+    post:
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Установка xСode image
+      tags:
+      - general_device_specific
   /device/{udid}/info:
     get:
       description: Возвращает все значения lockdown и дополнительные свойства instruments
@@ -410,6 +496,29 @@ paths:
       summary: Получить список профилей
       tags:
       - general_device_specific
+  /device/{udid}/reboot:
+    post:
+      description: Перезапуск устройства
+      parameters:
+      - description: UDID устройства
+        in: path
+        name: udid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.GenericResponse'
+      summary: Перезапуск устройства
+      tags:
+      - device
   /device/{udid}/resetlocation:
     post:
       description: Сбрасывает изменённое местоположение устройства к реальному

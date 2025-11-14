@@ -29,3 +29,9 @@ docker run --rm --privileged \
   -v /dev/bus/usb:/dev/bus/usb \
   -p 27015:27015 \
   libimobiledevice
+```
+
+### Генерация swagger 
+```bash
+ swag init --parseDependency --parseInternal -o docs-peer
+```

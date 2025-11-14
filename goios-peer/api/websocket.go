@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"goios-peer/model"
 	"net/http"
 	"sync"
 
@@ -10,8 +11,8 @@ import (
 )
 
 type State struct {
-	Device map[string]interface{} `json:"info"`
-	Wda    WdaStatus              `json:"wda"`
+	Device *model.DeviceInfo `json:"info"`
+	Wda    WdaStatus         `json:"wda"`
 }
 
 type WdaStatus struct {

@@ -85,7 +85,7 @@ const docTemplate = `{
         },
         "/device/{udid}/apps/install": {
             "post": {
-                "description": "Установить приложение на устройстве, загрузив ipa-файл",
+                "description": "Установить приложение на устройстве, загрузив ipa-файл напрямую или по ссылке",
                 "produces": [
                     "application/json"
                 ],
@@ -98,8 +98,15 @@ const docTemplate = `{
                         "type": "file",
                         "description": "ipa-файл для установки",
                         "name": "file",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
+                    },
+                    {
+                        "description": "URL для скачивания ipa-файла",
+                        "name": "url",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/api.InstallAppRequest"
+                        }
                     },
                     {
                         "type": "string",
@@ -112,6 +119,18 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
                         "schema": {
                             "$ref": "#/definitions/api.GenericResponse"
                         }
@@ -369,6 +388,62 @@ const docTemplate = `{
                 }
             }
         },
+        "/device/{udid}/image": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general_device_specific"
+                ],
+                "summary": "Получить хэш загруженного образа",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general_device_specific"
+                ],
+                "summary": "Установка xСode image",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/device/{udid}/info": {
             "get": {
                 "description": "Возвращает все значения lockdown и дополнительные свойства instruments для устройств с включенной разработкой.",
@@ -488,6 +563,41 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.GenericResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/device/{udid}/reboot": {
+            "post": {
+                "description": "Перезапуск устройства",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "device"
+                ],
+                "summary": "Перезапуск устройства",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UDID устройства",
+                        "name": "udid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/api.GenericResponse"
                         }
@@ -956,16 +1066,70 @@ const docTemplate = `{
                 }
             }
         },
+        "api.InstallAppRequest": {
+            "type": "object",
+            "required": [
+                "url"
+            ],
+            "properties": {
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
         "api.StreamRequest": {
             "type": "object",
             "properties": {
+                "bitrate": {
+                    "type": "string"
+                },
+                "bufsize": {
+                    "type": "string"
+                },
+                "gop_size": {
+                    "description": "указатель — может быть null",
+                    "type": "integer"
+                },
+                "keyint_min": {
+                    "type": "integer"
+                },
+                "level": {
+                    "type": "string"
+                },
+                "maxrate": {
+                    "type": "string"
+                },
+                "overlay_time": {
+                    "type": "boolean"
+                },
+                "payload_type": {
+                    "type": "integer"
+                },
+                "pix_fmt": {
+                    "type": "string"
+                },
+                "pkt_size": {
+                    "type": "integer"
+                },
                 "port": {
                     "type": "integer",
                     "example": 5004
                 },
+                "preset": {
+                    "type": "string"
+                },
+                "profile": {
+                    "type": "string"
+                },
+                "tune": {
+                    "type": "string"
+                },
                 "url": {
                     "type": "string",
                     "example": "192.168.1.50"
+                },
+                "x264_params": {
+                    "type": "string"
                 }
             }
         },

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"goios-peer/imagemounterovveride"
+	"goios-peer/model"
 	"net/http"
 	"sync"
 	"time"
@@ -452,7 +453,7 @@ func PairDevice(c *gin.Context) {
 	c.JSON(http.StatusOK, GenericResponse{Message: "Device paired"})
 }
 
-func GetInfoFirstDevice() map[string]interface{} {
+func GetInfoFirstDevice() *model.DeviceInfo {
 	const maxAttempts = 10
 
 	for attempt := 1; attempt <= maxAttempts; attempt++ {
@@ -488,10 +489,31 @@ func GetInfoFirstDevice() map[string]interface{} {
 			}
 		}
 
-		log.Info(allValues)
-		return allValues
+		// Создаём модель и заполняем только нужные поля
+		deviceInfo := &model.DeviceInfo{
+			UniqueDeviceID: getStringValue(allValues, "UniqueDeviceID"),
+			SerialNumber:   getStringValue(allValues, "SerialNumber"),
+			ProductVersion: getStringValue(allValues, "ProductVersion"),
+			ProductName:    getStringValue(allValues, "ProductName"),
+			ProductType:    getStringValue(allValues, "ProductType"),
+			DeviceName:     getStringValue(allValues, "DeviceName"),
+			ModelNumber:    getStringValue(allValues, "ModelNumber"),
+		}
+
+		log.Info(deviceInfo)
+		return deviceInfo
 	}
 
 	log.Fatal("Failed to get device info after 10 attempts, exiting application")
-	return nil // log.Fatal завершает выполнение, эта строка не будет достигнута
+	return nil
+}
+
+// Вспомогательная функция для безопасного извлечения строковых значений
+func getStringValue(data map[string]interface{}, key string) string {
+	if value, exists := data[key]; exists {
+		if str, ok := value.(string); ok {
+			return str
+		}
+	}
+	return ""
 }

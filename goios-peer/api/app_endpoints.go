@@ -1,13 +1,12 @@
 package api
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/danielpaulus/go-ios/ios"
 	"github.com/danielpaulus/go-ios/ios/installationproxy"
@@ -17,9 +16,11 @@ import (
 	"github.com/google/uuid"
 )
 
-type InstallAppRequest struct {
+type InstallAppByUrlRequest struct {
 	URL string `json:"url" binding:"required,url"`
 }
+
+const MaxFileSize = 200 * 1024 * 1024 // 200 MB
 
 // Список приложений на устройстве
 // @Summary      Список приложений на устройстве
@@ -154,142 +155,6 @@ func KillApp(c *gin.Context) {
 	c.JSON(http.StatusOK, GenericResponse{Message: bundleID + " is not running"})
 }
 
-// Установка приложения на устройстве
-// @Summary      Установка приложения на устройстве
-// @Description  Установить приложение на устройстве, загрузив ipa-файл напрямую или по ссылке
-// @Tags         apps
-// @Produce      json
-// @Param        file formData file false "ipa-файл для установки"
-// @Param        url  body    InstallAppRequest false "URL для скачивания ipa-файла"
-// @Param        udid path    string true "UDID устройства"
-// @Success      200 {object} GenericResponse
-// @Failure      400 {object} GenericResponse
-// @Failure      413 {object} GenericResponse
-// @Failure      500 {object} GenericResponse
-// @Router       /device/{udid}/apps/install [post]
-func InstallApp(c *gin.Context) {
-	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
-
-	var dst string
-	var cleanup func() // отложенная очистка временного файла
-	defer func() {
-		if cleanup != nil {
-			cleanup()
-		}
-	}()
-
-	// Определяем, передан ли файл через multipart/form-data
-	_, fileHeader, _ := c.Request.FormFile("file")
-	hasFile := fileHeader != nil
-
-	// Определяем, передано ли тело как JSON с URL
-	var jsonReq InstallAppRequest
-	hasJSON := false
-	if c.GetHeader("Content-Type") == "application/json" {
-		if err := c.ShouldBindJSON(&jsonReq); err == nil && jsonReq.URL != "" {
-			hasJSON = true
-		}
-	}
-
-	// Валидация: должен быть либо файл, либо URL — но не оба и не ни один
-	if hasFile && hasJSON {
-		c.JSON(http.StatusBadRequest, GenericResponse{Error: "provide either 'file' or 'url', not both"})
-		return
-	}
-	if !hasFile && !hasJSON {
-		c.JSON(http.StatusBadRequest, GenericResponse{Error: "either 'file' (formData) or 'url' (JSON) is required"})
-		return
-	}
-
-	appDownloadFolder := os.Getenv("APP_DOWNLOAD_FOLDER")
-	if appDownloadFolder == "" {
-		appDownloadFolder = os.TempDir()
-	}
-
-	if hasFile {
-		file, err := c.FormFile("file")
-		if err != nil {
-			c.JSON(http.StatusBadRequest, GenericResponse{Error: "file form-data is missing"})
-			return
-		}
-
-		if file.Size == 0 {
-			c.JSON(http.StatusBadRequest, GenericResponse{Error: "uploaded file is empty"})
-			return
-		}
-		if file.Size > 200*1024*1024 {
-			c.JSON(http.StatusRequestEntityTooLarge, GenericResponse{Error: "file size exceeds the 200MB limit"})
-			return
-		}
-
-		dst = path.Join(appDownloadFolder, uuid.New().String()+".ipa")
-		if err := c.SaveUploadedFile(file, dst); err != nil {
-			c.JSON(http.StatusInternalServerError, GenericResponse{Error: "failed to save uploaded file"})
-			return
-		}
-
-		cleanup = func() {
-			if err := os.Remove(dst); err != nil {
-				log.Printf("Warning: failed to remove temp file %s: %v", dst, err)
-			}
-		}
-
-	} else if hasJSON {
-		// Скачиваем файл по URL
-		resp, err := http.Get(jsonReq.URL)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, GenericResponse{Error: "failed to fetch file from URL: " + err.Error()})
-			return
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			c.JSON(http.StatusBadRequest, GenericResponse{Error: fmt.Sprintf("failed to download file: HTTP %d", resp.StatusCode)})
-			return
-		}
-
-		// Ограничиваем размер — читаем с лимитом
-		limitReader := io.LimitReader(resp.Body, 200*1024*1024+1) // +1 для детекции превышения
-		var buf bytes.Buffer
-		n, err := buf.ReadFrom(limitReader)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, GenericResponse{Error: "error reading downloaded file"})
-			return
-		}
-
-		if n > 200*1024*1024 {
-			c.JSON(http.StatusRequestEntityTooLarge, GenericResponse{Error: "downloaded file exceeds the 200MB limit"})
-			return
-		}
-
-		dst = path.Join(appDownloadFolder, uuid.New().String()+".ipa")
-		if err := os.WriteFile(dst, buf.Bytes(), 0644); err != nil {
-			c.JSON(http.StatusInternalServerError, GenericResponse{Error: "failed to save downloaded file"})
-			return
-		}
-
-		cleanup = func() {
-			if err := os.Remove(dst); err != nil {
-				log.Printf("Warning: failed to remove temp file %s: %v", dst, err)
-			}
-		}
-	}
-
-	// Установка приложения через ZipConduit
-	conn, err := zipconduit.New(device)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, GenericResponse{Error: "Unable to setup ZipConduit connection"})
-		return
-	}
-
-	if err := conn.SendFile(dst); err != nil {
-		c.JSON(http.StatusInternalServerError, GenericResponse{Error: "Unable to install uploaded app: " + err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, GenericResponse{Message: "App installed successfully"})
-}
-
 // Удаление приложения с устройства
 // @Summary      Удаление приложения с устройства
 // @Description  Удалить приложение с устройства по указанному bundleID
@@ -323,4 +188,157 @@ func UninstallApp(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, GenericResponse{Message: bundleID + " uninstalled successfully"})
+}
+
+// InstallAppFromFileController
+// @Summary      Установить приложение из загруженного файла
+// @Description  Загружает IPA-файл и устанавливает его на устройство
+// @Tags         apps
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        udid  path   string  true  "UDID устройства"
+// @Param        file  formData file   true  "IPA-файл (.ipa)"
+// @Success      200   {object} GenericResponse
+// @Failure      400   {object} GenericResponse
+// @Failure      413   {object} GenericResponse
+// @Failure      500   {object} GenericResponse
+// @Router       /device/{udid}/apps/install [post]
+func InstallAppFromFile(c *gin.Context) {
+	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, GenericResponse{Error: "missing 'file' in form data"})
+		return
+	}
+
+	if err := validateFileSize(file.Size); err != nil {
+		c.JSON(http.StatusBadRequest, GenericResponse{Error: err.Error()})
+		return
+	}
+
+	dst := filepath.Join(os.TempDir(), uuid.New().String()+".ipa")
+	if err := c.SaveUploadedFile(file, dst); err != nil {
+		c.JSON(http.StatusInternalServerError, GenericResponse{Error: "failed to save uploaded file"})
+		return
+	}
+	defer CleanupTempFile(dst)
+
+	if err := installApp(device, dst); err != nil {
+		c.JSON(http.StatusInternalServerError, GenericResponse{Error: "installation failed: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, GenericResponse{Message: "App installed successfully"})
+}
+
+// InstallAppByUrlController
+// @Summary      Установить приложение по ссылке
+// @Description  Скачивает IPA по URL и устанавливает на устройство
+// @Tags         apps
+// @Accept       json
+// @Produce      json
+// @Param        udid  path   string            true  "UDID устройства"
+// @Param        req   body   InstallAppByUrlRequest true "URL на IPA-файл"
+// @Success      200   {object} GenericResponse
+// @Failure      400   {object} GenericResponse
+// @Failure      413   {object} GenericResponse
+// @Failure      500   {object} GenericResponse
+// @Router       /device/{udid}/apps/install-by-url [post]
+func InstallAppByUrl(c *gin.Context) {
+	device := c.MustGet(IOS_KEY).(ios.DeviceEntry)
+
+	var req InstallAppByUrlRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, GenericResponse{Error: "invalid JSON: " + err.Error()})
+		return
+	}
+
+	data, err := downloadFileByURL(req.URL)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, GenericResponse{Error: "failed to download file: " + err.Error()})
+		return
+	}
+
+	dst, err := saveTempFile(data)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, GenericResponse{Error: "failed to save downloaded file"})
+		return
+	}
+	defer CleanupTempFile(dst)
+
+	if err := installApp(device, dst); err != nil {
+		c.JSON(http.StatusInternalServerError, GenericResponse{Error: "installation failed: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, GenericResponse{Message: "App installed successfully"})
+}
+
+func CleanupTempFile(path string) {
+	if err := os.Remove(path); err != nil {
+		log.Printf("Warning: failed to delete temp file %s: %v", path, err)
+	}
+}
+func saveTempFile(data []byte) (string, error) {
+	appDownloadFolder := os.Getenv("APP_DOWNLOAD_FOLDER")
+	if appDownloadFolder == "" {
+		appDownloadFolder = os.TempDir()
+	}
+
+	dst := filepath.Join(appDownloadFolder, uuid.New().String()+".ipa")
+	if err := os.WriteFile(dst, data, 0644); err != nil {
+		return "", err
+	}
+
+	return dst, nil
+}
+
+// validateFileSize — проверяет размер файла
+func validateFileSize(size int64) error {
+	if size == 0 {
+		return fmt.Errorf("uploaded file is empty")
+	}
+	if size > MaxFileSize {
+		return fmt.Errorf("file size exceeds %d bytes", MaxFileSize)
+	}
+	return nil
+}
+
+// downloadFileByURL — скачивает файл по URL и возвращает его содержимое
+func downloadFileByURL(url string) ([]byte, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
+	}
+
+	lr := io.LimitReader(resp.Body, MaxFileSize+1)
+	buf, err := io.ReadAll(lr)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(buf) > MaxFileSize {
+		return nil, fmt.Errorf("file size exceeds %d bytes", MaxFileSize)
+	}
+
+	return buf, nil
+}
+
+func installApp(device ios.DeviceEntry, ipaPath string) error {
+	conn, err := zipconduit.New(device)
+	if err != nil {
+		return fmt.Errorf("failed to create ZipConduit connection: %w", err)
+	}
+
+	err = conn.SendFile(ipaPath)
+	if err != nil {
+		return fmt.Errorf("failed to send file via ZipConduit: %w", err)
+	}
+	return nil
 }
