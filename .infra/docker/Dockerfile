@@ -13,12 +13,11 @@ FROM docker-registry.x5.ru/debian:bookworm-slim
 RUN rm -rf /etc/apt/sources.list && \
   echo "deb https://art.x5.ru/artifactory/deb-debian-remote bookworm main" >> /etc/apt/sources.list && \
   echo "deb https://art.x5.ru/artifactory/deb-debian-remote bookworm-updates main" >> /etc/apt/sources.list && \
-  echo "deb https://art.x5.ru/artifactory/deb-debian-security-remote bookworm-security main" >> /etc/apt/sources.list \
-
-COPY --from=docker-base-images-prod.x5.ru/x5-certs:latest /x5/certs/* /usr/local/share/ca-certificates/
+  echo "deb https://art.x5.ru/artifactory/deb-debian-security-remote bookworm-security main" >> /etc/apt/sources.list
+#COPY --from=docker-base-images-prod.x5.ru/x5-certs:latest /x5/certs/* /usr/local/share/ca-certificates/
 
 RUN apt update -o "Acquire::https::Verify-Peer=false" -y && \
-    apt install -o "Acquire::https::Verify-Peer=false" -y ca-certificates libimobiledevice-utils libimobiledevice6 usbmuxd  ffmpeg && \
+    apt install --no-install-recommends -o "Acquire::https::Verify-Peer=false" -y ca-certificates libimobiledevice-utils libimobiledevice6 usbmuxd  ffmpeg && \
     update-ca-certificates
 
 #RUN apt update && apt -y install libimobiledevice-utils libimobiledevice6 usbmuxd  ffmpeg \

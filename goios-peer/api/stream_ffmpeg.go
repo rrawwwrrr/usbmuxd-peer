@@ -81,8 +81,9 @@ func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 
 		// --- ВЫХОД: видео только, стабильный CBR, низкая задержка ---
 		"-an",
+		"-map", "0:v",
 		"-c:v", "libx264",
-		"-preset", "ultrafast",
+		"-preset", "medium",
 		"-tune", "zerolatency",
 		"-pix_fmt", "yuv420p",
 		"-profile:v", "baseline",
@@ -95,6 +96,20 @@ func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 		"-f", "rtp", "-payload_type", "96",
 		"-ssrc", strconv.Itoa(port),
 		fmt.Sprintf("rtp://%s:%d?pkt_size=1200", host, 4000),
+
+		"-map", "0:v",
+		"-c:v", "libx264",
+		"-preset", "medium",
+		"-crf", "23",
+		"-pix_fmt", "yuv420p",
+		"-profile:v", "baseline",
+		"-level", "4.0",
+		"-f", "mp4",
+		"-movflags", "+frag_keyframe+empty_moov",
+		"-flush_packets", "1",
+		"-threads", "1",
+		"-y",
+		"recording.mp4",
 	}
 
 	c := exec.Command("ffmpeg", args...)
@@ -202,6 +217,55 @@ func StatusStream(c *gin.Context) {
 		c.String(http.StatusOK, "stopped")
 	}
 }
+
+// DownloadRecording godoc
+// @Summary Скачать запись стрима
+// @Description Возвращает файл стриминга для скачивания
+// @Tags stream
+// @Produce video/mp4
+// @Param        udid path string true "UDID устройства"
+// @Success 200 {file} file "Recording file"
+// @Failure 404 {string} string "File not found"
+// @Failure 500 {string} string "Internal error"
+// @Router /device/{udid}/stream/recording [get]
+func DownloadRecording(c *gin.Context) {
+	filePath, err := getRecordingFilePath()
+	if err != nil {
+		log.WithError(err).Error("Failed to get recording file")
+		c.String(http.StatusNotFound, "Recording file not found")
+		return
+	}
+
+	// Устанавливаем заголовки для скачивания
+	c.Header("Content-Disposition", "attachment; filename=\"recording.mp4\"")
+	c.Header("Content-Type", "video/mp4")
+	c.File(filePath)
+}
+
+// PreviewRecording godoc
+// @Summary Просмотреть запись стрима
+// @Description Возвращает файл стриминга для просмотра в браузере
+// @Tags stream
+// @Produce video/mp4
+// @Param        udid path string true "UDID устройства"
+// @Success 200 {file} file "Recording file"
+// @Failure 404 {string} string "File not found"
+// @Failure 500 {string} string "Internal error"
+// @Router /device/{udid}/stream/preview [get]
+func PreviewRecording(c *gin.Context) {
+	filePath, err := getRecordingFilePath()
+	if err != nil {
+		log.WithError(err).Error("Failed to get recording file")
+		c.String(http.StatusNotFound, "Recording file not found")
+		return
+	}
+
+	// Устанавливаем заголовки для просмотра в браузере
+	c.Header("Content-Disposition", "inline; filename=\"recording.mp4\"")
+	c.Header("Content-Type", "video/mp4")
+	c.File(filePath)
+}
+
 func waitForMJPEG(address string, timeout time.Duration) error {
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
@@ -216,4 +280,13 @@ func waitForMJPEG(address string, timeout time.Duration) error {
 		time.Sleep(200 * time.Millisecond)
 	}
 	return fmt.Errorf("timeout waiting for MJPEG at %s", address)
+}
+
+// getRecordingFilePath возвращает путь к файлу записи
+func getRecordingFilePath() (string, error) {
+	filePath := "/app/recording.mp4"
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return "", fmt.Errorf("recording file not found: %s", filePath)
+	}
+	return filePath, nil
 }
