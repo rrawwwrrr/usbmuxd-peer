@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 	"sync"
 
@@ -75,7 +76,12 @@ func (p *ProxyManager) streamLoop() {
 				fmt.Printf("Ошибка подключения к источнику: %v\n", err)
 				continue
 			}
-			defer resp.Body.Close()
+			defer func(Body io.ReadCloser) {
+				err := Body.Close()
+				if err != nil {
+
+				}
+			}(resp.Body)
 
 			reader := bufio.NewReader(resp.Body)
 			boundary := []byte(MjpegBoundary)

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/danielpaulus/go-ios/ios"
@@ -183,7 +184,7 @@ func CreateWdaSession(c *gin.Context) {
 	var config WdaConfig
 	if err := c.ShouldBindJSON(&config); err != nil {
 		// fallback на дефолтный конфиг
-		config = defaultWdaConfig()
+		config = defaultWdaConfig(device)
 	}
 
 	session, err := wdaFactory.Create(device, config)
@@ -235,10 +236,17 @@ func DeleteWdaSession(c *gin.Context) {
 	c.JSON(http.StatusOK, session)
 }
 
-func defaultWdaConfig() WdaConfig {
-	bundleID := os.Getenv("WDA_BUNDLE_ID")
-	if bundleID == "" {
-		bundleID = "com.facebook.WebDriverAgentRunner.xctrunner"
+func defaultWdaConfig(device ios.DeviceEntry) WdaConfig {
+	var bundleID string
+	apps, _ := GetUserApps(device)
+
+	for _, app := range apps {
+		bundleID = app.CFBundleIdentifier()
+		if strings.HasSuffix(bundleID, ".xctrunner") {
+			log.WithField("bundleID", bundleID).Info("Found xctrunner, exiting loop")
+			break
+		}
+		log.WithField("bundleID", bundleID).Info("wda match")
 	}
 	return WdaConfig{
 		BundleID:     bundleID,

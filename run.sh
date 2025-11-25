@@ -12,6 +12,10 @@ cleanup() {
 
 trap 'cleanup' EXIT
 
+echo "lsusb"
+lsusb
+echo "ls -lht /dev/bus/usb/001/"
+ls -lht /dev/bus/usb/001/
 usbmuxd -f &
 UMUXD_PID=$!
 

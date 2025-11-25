@@ -10,7 +10,7 @@ RUN go build -o peer
 
 FROM ubuntu:24.04
 
-RUN apt update && apt -y install  --no-install-recommends libimobiledevice-utils libimobiledevice6 usbmuxd  ffmpeg \
+RUN apt update && apt -y install  --no-install-recommends libimobiledevice-utils libimobiledevice6 usbmuxd usbutils ffmpeg \
         && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

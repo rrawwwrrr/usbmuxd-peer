@@ -17,7 +17,7 @@ RUN rm -rf /etc/apt/sources.list && \
 #COPY --from=docker-base-images-prod.x5.ru/x5-certs:latest /x5/certs/* /usr/local/share/ca-certificates/
 
 RUN apt update -o "Acquire::https::Verify-Peer=false" -y && \
-    apt install --no-install-recommends -o "Acquire::https::Verify-Peer=false" -y ca-certificates libimobiledevice-utils libimobiledevice6 usbmuxd  ffmpeg && \
+    apt install --no-install-recommends -o "Acquire::https::Verify-Peer=false" -y ca-certificates libimobiledevice-utils libimobiledevice6 usbmuxd usbutils ffmpeg && \
     update-ca-certificates
 
 #RUN apt update && apt -y install libimobiledevice-utils libimobiledevice6 usbmuxd  ffmpeg \

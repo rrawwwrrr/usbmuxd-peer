@@ -342,3 +342,17 @@ func installApp(device ios.DeviceEntry, ipaPath string) error {
 	}
 	return nil
 }
+
+func GetUserApps(device ios.DeviceEntry) ([]installationproxy.AppInfo, error) {
+	installationProxy, err := installationproxy.New(device)
+	if err != nil {
+		return make([]installationproxy.AppInfo, 0), fmt.Errorf("cannot connect to installation proxy: %w", err)
+	}
+	defer installationProxy.Close()
+	apps, err := installationProxy.BrowseUserApps()
+	if err != nil {
+		return make([]installationproxy.AppInfo, 0), fmt.Errorf("cannot browse user apps: %w", err)
+	}
+
+	return apps, nil
+}

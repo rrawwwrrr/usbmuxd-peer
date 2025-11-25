@@ -81,8 +81,6 @@ func streamRoutes(group *gin.RouterGroup) {
 	router.POST("/start", StartStream)
 	router.GET("/recording", DownloadRecording)
 	router.GET("/preview", PreviewRecording)
-	router.POST("/startwithparam", StartStream2)
-
 	router.DELETE("/stop", StopStream)
 	router.GET("/status", StatusStream)
 }

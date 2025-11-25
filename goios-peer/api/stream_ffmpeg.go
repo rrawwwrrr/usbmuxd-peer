@@ -15,44 +15,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type StreamConfig struct {
-	VideoCodec   string `json:"video_codec"` // например, "libx264"
-	Preset       string `json:"preset"`      // "veryfast", "ultrafast"...
-	Tune         string `json:"tune"`        // "zerolatency"
-	PixFmt       string `json:"pix_fmt"`     // "yuv420p"
-	Profile      string `json:"profile"`     // "baseline"
-	Level        string `json:"level"`       // "3.1"
-	GopSize      *int   `json:"gop_size"`    // int pointer — может быть nil
-	KeyintMin    *int   `json:"keyint_min"`
-	SCRThreshold *int   `json:"sc_threshold"` // например, 0
-	Bitrate      string `json:"bitrate"`      // "1500k"
-	MaxRate      string `json:"maxrate"`      // может быть пустым
-	BufSize      string `json:"bufsize"`      // может быть пустым
-	X264Params   string `json:"x264_params"`  // дополнительные параметры
-	PayloadType  *int   `json:"payload_type"` // например, 96
-	FMT          string `json:"format"`       // "rtp"
-	PacketSize   *int   `json:"pkt_size"`     // для RTP
-}
-
 // StreamRequest структура запроса для старта стрима
 type StreamRequest struct {
 	URL  string `json:"url" example:"192.168.1.50"`
 	Port int    `json:"port" example:"5004"`
-
-	Preset      string `json:"preset"`
-	Bitrate     string `json:"bitrate"`
-	MaxRate     string `json:"maxrate"`
-	BufSize     string `json:"bufsize"`
-	GopSize     *int   `json:"gop_size"` // указатель — может быть null
-	KeyintMin   *int   `json:"keyint_min"`
-	Level       string `json:"level"`
-	Profile     string `json:"profile"`
-	PixFmt      string `json:"pix_fmt"`
-	Tune        string `json:"tune"`
-	X264Params  string `json:"x264_params"`
-	PayloadType *int   `json:"payload_type"`
-	PacketSize  *int   `json:"pkt_size"`
-	OverlayTime bool   `json:"overlay_time"`
+	Gw   string `json:"gw" example:"4000"`
 }
 
 var (
@@ -61,10 +28,10 @@ var (
 )
 
 // startStream запускает ffmpeg для ретрансляции MJPEG -> H264 -> RTP
-func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
+func startStream(host string, port int, gwPort string, mjpegHost string, mjpegPort int) error {
 
 	mjpegURL := fmt.Sprintf("http://%s:%d", mjpegHost, mjpegPort)
-	log.WithField("ssrc", strconv.Itoa(port)).Info("Start stream")
+	log.WithField("ssrc", port).Info("Start stream")
 	args := []string{
 		// --- Настройки ВХОДНОГО потока (перед -i) ---
 		"-rw_timeout", "2000000", // 2s: если вход завис — быстро отвалиться
@@ -78,9 +45,10 @@ func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 		"-r", "25",
 
 		"-i", mjpegURL, // источник
+		"-an",
 
 		// --- ВЫХОД: видео только, стабильный CBR, низкая задержка ---
-		"-an",
+
 		"-map", "0:v",
 		"-c:v", "libx264",
 		"-preset", "medium",
@@ -92,10 +60,9 @@ func startStream(host string, port int, mjpegHost string, mjpegPort int) error {
 		"-b:v", "1500k", "-maxrate", "1500k", "-bufsize", "1500k",
 		"-fflags", "nobuffer",
 		"-flags", "low_delay",
-		//"-x264-params", "bframes=0:bpyramid=0:nal-hrd=cbr:repeat-headers=1:threads=4:sync-lookahead=0:rc-lookahead=0",
 		"-f", "rtp", "-payload_type", "96",
 		"-ssrc", strconv.Itoa(port),
-		fmt.Sprintf("rtp://%s:%d?pkt_size=1200", host, 4000),
+		fmt.Sprintf("rtp://%s:%s?pkt_size=1200", host, gwPort),
 
 		"-map", "0:v",
 		"-c:v", "libx264",
@@ -162,13 +129,13 @@ func StartStream(c *gin.Context) {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
-	wdaConfig := defaultWdaConfig()
+	wdaConfig := defaultWdaConfig(device)
 	wdaFactory.Create(device, wdaConfig)
 
 	if err := waitForMJPEG("http://127.0.0.1:8001", 10*time.Second); err != nil {
 		log.Error(err)
 	}
-	if err := startStream(req.URL, req.Port, "127.0.0.1", 8001); err != nil {
+	if err := startStream(req.URL, req.Port, req.Gw, "127.0.0.1", 8001); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		wdaFactory.Delete(device.Properties.SerialNumber)
 		return
